@@ -3,26 +3,14 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import unicode_literals  
 
-import abc
-import sys
-
 import numpy as np
-import pandas as pd
-from sklearn import linear_model, preprocessing, cluster, svm
-import matplotlib.pyplot as plt
-import seaborn as sns
-import scipy.linalg as slin
-import scipy.sparse.linalg as sparselin
-import scipy.sparse as sparse 
-from scipy.optimize import fmin_l_bfgs_b, fmin_cg, fmin_ncg
+from sklearn import svm
+from scipy.optimize import fmin_ncg
 
-import os.path
-import time
-import IPython
 import tensorflow as tf
 import math
 
-from .genericNeuralNet import GenericNeuralNet, variable, variable_with_weight_decay
+from .genericNeuralNet import GenericNeuralNet, variable_with_weight_decay
 
 def log_loss(x, t):
     exponents = -(x-1)/t
@@ -34,9 +22,6 @@ def log_loss(x, t):
         tf.exp(tf.zeros_like(exponents) - max_elems)))
     # return t * tf.log(tf.exp(-(x)/t) + 1)        
 
-def hinge(x):
-    return tf.maximum(1-x, 0)
-
 def smooth_hinge_loss(x, t):    
 
     # return tf.cond(
@@ -44,18 +29,10 @@ def smooth_hinge_loss(x, t):
     #     lambda: hinge(x),
     #     lambda: log_loss(x,t)
     #     )
-
     if t == 0:
         return hinge(x)
     else:
         return log_loss(x,t)
-
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
-
-def sigmoid_grad(x):
-    a = sigmoid(x)
-    return a * (1 - a)
 
 
 class SmoothHinge(GenericNeuralNet):
@@ -123,49 +100,24 @@ class SmoothHinge(GenericNeuralNet):
 
             # We regularize the bias to keep it in line with sklearn's 
             # liblinear implementation
-            if self.use_bias: 
-                weights = variable_with_weight_decay(
-                    'weights', 
-                    [self.input_dim + 1],
-                    stddev=5.0 / math.sqrt(float(self.input_dim)),
-                    wd=self.weight_decay)            
-                # biases = variable(
-                #     'biases',
-                #     [1],
-                #     tf.constant_initializer(0.0))
+            weights = variable_with_weight_decay(
+                'weights', 
+                [self.input_dim + 1],
+                stddev=5.0 / math.sqrt(float(self.input_dim)),
+                wd=self.weight_decay)            
+            # biases = variable(
+            #     'biases',
+            #     [1],
+            #     tf.constant_initializer(0.0))
 
-             
-                logits = tf.matmul(
-                tf.concat([input, tf.ones([tf.shape(input)[0], 1])], axis=1),
-                tf.reshape(weights, [-1, 1]))# + biases
             
-            else: 
-                weights = variable_with_weight_decay(
-                    'weights', 
-                    [self.input_dim],
-                    stddev=5.0 / math.sqrt(float(self.input_dim)),
-                    wd=self.weight_decay)            
-
-                logits = tf.matmul(
-                    input,
-                    tf.reshape(weights, [-1, 1]))
-
+            logits = tf.matmul(
+            tf.concat([input, tf.ones([tf.shape(input)[0], 1])], axis=1),
+            tf.reshape(weights, [-1, 1]))# + biases
 
         self.weights = weights
         return logits
 
-
-    def retrain(self, num_steps, feed_dict):
-        # self.sess.run(
-        #     self.update_learning_rate_op, 
-        #     feed_dict={self.learning_rate_placeholder: 1 * self.initial_learning_rate})        
-
-        # for step in xrange(num_steps):   
-        #     self.sess.run(self.train_op, feed_dict=feed_dict)
-        if self.temp == 0:
-            self.train_with_svm(feed_dict, save_checkpoints=False, verbose=False)
-        else:
-            self.train_with_fmin(feed_dict, save_checkpoints=False, verbose=False)
 
     def get_train_fmin_loss_fn(self, train_feed_dict):
         def fmin_loss(W):
@@ -175,6 +127,7 @@ class SmoothHinge(GenericNeuralNet):
             loss_val = self.sess.run(self.total_loss, feed_dict=train_feed_dict)        
             return loss_val
         return fmin_loss
+
 
     def get_train_fmin_grad_fn(self, train_feed_dict):        
         def fmin_grad(W):
@@ -245,52 +198,6 @@ class SmoothHinge(GenericNeuralNet):
 
         return results
 
-
-    def train_with_svm(self, feed_dict, save_checkpoints=True, verbose=True):
-
-        X_train = feed_dict[self.input_placeholder]
-        Y_train = feed_dict[self.labels_placeholder]
-        num_train_examples = len(Y_train)
-        assert len(Y_train.shape) == 1
-        assert X_train.shape[0] == Y_train.shape[0]
-
-        if num_train_examples == self.num_train_examples:
-            print('Using normal model')
-            model = self.svm_model
-        elif num_train_examples == self.num_train_examples - 1:
-            print('Using model minus one')
-            model = self.svm_model_minus_one
-        # else:
-        #     raise ValueError, "feed_dict has incorrect number of training examples"
-
-        model.fit(X_train, Y_train)
-        # sklearn returns coefficients in shape num_classes x num_features
-        # whereas our weights are defined as num_features x num_classes
-        # so we have to tranpose them first.
-        if self.use_bias:
-            W = np.concatenate((np.reshape(model.coef_.T, -1), model.intercept_), axis=0)
-        else:
-            W = np.reshape(model.coef_.T, -1)
-
-        params_feed_dict = {}
-        params_feed_dict[self.W_placeholder] = W
-        self.sess.run(self.set_params_op, feed_dict=params_feed_dict)
-        if save_checkpoints: self.saver.save(self.sess, self.checkpoint_file, global_step=0)
-
-        if verbose:
-            print('SVM training took %s iter.' % model.n_iter_)
-            print('After SVM training: ')
-            results = self.print_model_eval()
-        else: 
-            results = None
-
-        return results
-
-        # print('Starting SGD')
-        # for step in xrange(100):   
-        #     self.sess.run(self.train_op, feed_dict=feed_dict)
-
-        # self.print_model_eval()
 
     def set_params(self):
         if self.use_bias:

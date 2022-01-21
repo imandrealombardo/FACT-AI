@@ -63,16 +63,7 @@ def variable_with_weight_decay(name, shape, stddev, wd):
       tf.add_to_collection('losses', weight_decay)
 
     return var
-
-def normalize_vector(v):
-    """
-    Takes in a vector in list form, concatenates it to form a single vector,
-    normalizes it to unit length, then returns it in list form together with its norm.
-    """
-    norm_val = np.linalg.norm(np.concatenate(v))
-    norm_v = [a/norm_val for a in v]
-    return norm_v, norm_val
-
+    
 
 class GenericNeuralNet(object):
     """
@@ -258,17 +249,6 @@ class GenericNeuralNet(object):
         return feed_dict
 
 
-    def fill_feed_dict_with_all_but_one_ex(self, data_set, idx_to_remove):
-        num_examples = data_set.x.shape[0]
-        idx = np.array([True] * num_examples, dtype=bool)
-        idx[idx_to_remove] = False
-        feed_dict = {
-            self.input_placeholder: data_set.x[idx, :],
-            self.labels_placeholder: data_set.labels[idx]
-        }
-        return feed_dict
-
-
     def fill_feed_dict_with_batch(self, data_set, batch_size=0):
         if batch_size is None:
             return self.fill_feed_dict_with_all_ex(data_set)
@@ -283,16 +263,6 @@ class GenericNeuralNet(object):
         return feed_dict
 
 
-    def fill_feed_dict_with_some_ex(self, data_set, target_indices):
-        input_feed = data_set.x[target_indices, :].reshape(len(target_indices), -1)
-        labels_feed = data_set.labels[target_indices].reshape(-1)
-        feed_dict = {
-            self.input_placeholder: input_feed,
-            self.labels_placeholder: labels_feed,
-        }
-        return feed_dict
-
-
     def fill_feed_dict_with_one_ex(self, data_set, target_idx):
         input_feed = data_set.x[target_idx, :].reshape(1, -1)
         labels_feed = data_set.labels[target_idx].reshape(-1)
@@ -301,18 +271,6 @@ class GenericNeuralNet(object):
             self.labels_placeholder: labels_feed,
         }
         return feed_dict
-
-
-    def fill_feed_dict_manual(self, X, Y):
-        X = np.array(X)
-        Y = np.array(Y) 
-        input_feed = X.reshape(len(Y), -1)
-        labels_feed = Y.reshape(-1)
-        feed_dict = {
-            self.input_placeholder: input_feed,
-            self.labels_placeholder: labels_feed,
-        }
-        return feed_dict        
 
 
     def minibatch_mean_eval(self, ops, data_set):
@@ -397,83 +355,14 @@ class GenericNeuralNet(object):
 
         return results
 
+    # Not used but might be useful later
+    # def load_checkpoint(self, iter_to_load, do_checks=True):
+    #     checkpoint_to_load = "%s-%s" % (self.checkpoint_file, iter_to_load) 
+    #     self.saver.restore(self.sess, checkpoint_to_load)
 
-    def retrain(self, num_steps, feed_dict):        
-        for step in xrange(num_steps):   
-            self.sess.run(self.train_op, feed_dict=feed_dict)
-
-
-    def update_learning_rate(self, step):
-        assert self.num_train_examples % self.batch_size == 0
-        num_steps_in_epoch = self.num_train_examples / self.batch_size
-        epoch = step // num_steps_in_epoch
-
-        multiplier = 1
-        if epoch < self.decay_epochs[0]:
-            multiplier = 1
-        elif epoch < self.decay_epochs[1]:
-            multiplier = 0.1
-        else:
-            multiplier = 0.01
-        
-        self.sess.run(
-            self.update_learning_rate_op, 
-            feed_dict={self.learning_rate_placeholder: multiplier * self.initial_learning_rate})        
-
-
-    def train(self, num_steps, 
-              iter_to_switch_to_batch=20000, 
-              iter_to_switch_to_sgd=40000,
-              save_checkpoints=True, verbose=True):
-        """
-        Trains a model for a specified number of steps.
-        """
-        if verbose: print('Training for %s steps' % num_steps)
-
-        sess = self.sess            
-
-        for step in xrange(num_steps):
-            self.update_learning_rate(step)
-
-            start_time = time.time()
-
-            if step < iter_to_switch_to_batch:                
-                feed_dict = self.fill_feed_dict_with_batch(self.data_sets.train)
-                _, loss_val = sess.run([self.train_op, self.total_loss], feed_dict=feed_dict)
-                
-            elif step < iter_to_switch_to_sgd:
-                feed_dict = self.all_train_feed_dict          
-                _, loss_val = sess.run([self.train_op, self.total_loss], feed_dict=feed_dict)
-
-            else: 
-                feed_dict = self.all_train_feed_dict          
-                _, loss_val = sess.run([self.train_sgd_op, self.total_loss], feed_dict=feed_dict)          
-
-            duration = time.time() - start_time
-
-            if verbose:
-                if step % 1000 == 0:
-                    # Print status to stdout.
-                    print('Step %d: loss = %.8f (%.3f sec)' % (step, loss_val, duration))
-
-            # Save a checkpoint and evaluate the model periodically.
-            if (step + 1) % 100000 == 0 or (step + 1) == num_steps:
-                if save_checkpoints: self.saver.save(sess, self.checkpoint_file, global_step=step)
-                if verbose: 
-                    results = self.print_model_eval()
-                else:
-                    results = None
-
-        return results
-
-
-    def load_checkpoint(self, iter_to_load, do_checks=True):
-        checkpoint_to_load = "%s-%s" % (self.checkpoint_file, iter_to_load) 
-        self.saver.restore(self.sess, checkpoint_to_load)
-
-        if do_checks:
-            print('Model %s loaded. Sanity checks ---' % checkpoint_to_load)
-            self.print_model_eval()
+    #     if do_checks:
+    #         print('Model %s loaded. Sanity checks ---' % checkpoint_to_load)
+    #         self.print_model_eval()
 
 
     def get_train_op(self, total_loss, global_step, learning_rate):
@@ -508,37 +397,6 @@ class GenericNeuralNet(object):
         return tf.reduce_sum(tf.cast(correct, tf.int32)) / tf.shape(labels)[0]
 
 
-    def loss(self, logits, labels):
-
-        labels = tf.one_hot(labels, depth=self.num_classes)
-        # correct_prob = tf.reduce_sum(tf.multiply(labels, tf.nn.softmax(logits)), reduction_indices=1)
-        cross_entropy = - tf.reduce_sum(tf.multiply(labels, tf.nn.log_softmax(logits)), reduction_indices=1)
-
-        indiv_loss_no_reg = cross_entropy
-        loss_no_reg = tf.reduce_mean(cross_entropy, name='xentropy_mean')
-        tf.add_to_collection('losses', loss_no_reg)
-
-        total_loss = tf.add_n(tf.get_collection('losses'), name='total_loss')
-
-        return total_loss, loss_no_reg, indiv_loss_no_reg
-
-
-    def adversarial_loss(self, logits, labels):
-        # Computes sum of log(1 - p(y = true|x))
-        # No regularization (because this is meant to be computed on the test data)
-
-        labels = tf.one_hot(labels, depth=self.num_classes)        
-        wrong_labels = (labels - 1) * -1 # Flips 0s and 1s
-        wrong_labels_bool = tf.reshape(tf.cast(wrong_labels, tf.bool), [-1, self.num_classes])
-
-        wrong_logits = tf.reshape(tf.boolean_mask(logits, wrong_labels_bool), [-1, self.num_classes - 1])
-        
-        indiv_adversarial_loss = tf.reduce_logsumexp(wrong_logits, reduction_indices=1) - tf.reduce_logsumexp(logits, reduction_indices=1)
-        adversarial_loss = tf.reduce_mean(indiv_adversarial_loss)
-        
-        return adversarial_loss, indiv_adversarial_loss #, indiv_wrong_prob
-
-
     def update_feed_dict_with_v_placeholder(self, feed_dict, vec):
         for pl_block, vec_block in zip(self.v_placeholder, vec):
             feed_dict[pl_block] = vec_block        
@@ -552,47 +410,6 @@ class GenericNeuralNet(object):
         elif approx_type == 'cg':
             return self.get_inverse_hvp_cg(v, verbose)
 
-
-    def get_inverse_hvp_lissa(self, v, 
-                              batch_size=None,
-                              scale=10, damping=0.0, num_samples=1, recursion_depth=10000):
-        """
-        This uses mini-batching; uncomment code for the single sample case.
-        """    
-        inverse_hvp = None
-        print_iter = recursion_depth / 10
-
-        for i in range(num_samples):
-            # samples = np.random.choice(self.num_train_examples, size=recursion_depth)
-           
-            cur_estimate = v
-
-            for j in range(recursion_depth):
-             
-                # feed_dict = fill_feed_dict_with_one_ex(
-                #   data_set, 
-                #   images_placeholder, 
-                #   labels_placeholder, 
-                #   samples[j])   
-                feed_dict = self.fill_feed_dict_with_batch(self.data_sets.train, batch_size=batch_size)
-
-                feed_dict = self.update_feed_dict_with_v_placeholder(feed_dict, cur_estimate)
-                hessian_vector_val = self.sess.run(self.hessian_vector, feed_dict=feed_dict)
-                cur_estimate = [a + (1-damping) * b - c/scale for (a,b,c) in zip(v, cur_estimate, hessian_vector_val)]    
-
-                # Update: v + (I - Hessian_at_x) * cur_estimate
-                if (j % print_iter == 0) or (j == recursion_depth - 1):
-                    print("Recursion at depth %s: norm is %.8lf" % (j, np.linalg.norm(np.concatenate(cur_estimate))))
-                    feed_dict = self.update_feed_dict_with_v_placeholder(feed_dict, cur_estimate)
-
-            if inverse_hvp is None:
-                inverse_hvp = [b/scale for b in cur_estimate]
-            else:
-                inverse_hvp = [a + b/scale for (a, b) in zip(inverse_hvp, cur_estimate)]  
-
-        inverse_hvp = [a/num_samples for a in inverse_hvp]
-        return inverse_hvp
-  
     
     def minibatch_hessian_vector_val(self, v):
 
@@ -722,114 +539,6 @@ class GenericNeuralNet(object):
             
         return test_grad_loss_no_reg_val
 
-
-    def get_influence_on_test_loss(self, test_indices, train_idx, 
-        approx_type='cg', approx_params=None, force_refresh=True, test_description=None,
-        loss_type='normal_loss',
-        X=None, Y=None):
-        # If train_idx is None then use X and Y (phantom points)
-        # Need to make sure test_idx stays consistent between models
-        # because mini-batching permutes dataset order
-
-        # if train_idx is None: 
-        #     if (X is None) or (Y is None): raise ValueError, 'X and Y must be specified if using phantom points.'
-        #     if X.shape[0] != len(Y): raise ValueError, 'X and Y must have the same length.'
-        # else:
-        #     if (X is not None) or (Y is not None): raise ValueError, 'X and Y cannot be specified if train_idx is specified.'
-
-        test_grad_loss_no_reg_val = self.get_test_grad_loss_no_reg_val(test_indices, loss_type=loss_type)
-
-        print('Norm of test gradient: %s' % np.linalg.norm(np.concatenate(test_grad_loss_no_reg_val)))
-
-        start_time = time.time()
-
-        if test_description is None:
-            test_description = test_indices
-
-        approx_filename = os.path.join(self.train_dir, '%s-%s-%s-test-%s.npz' % (self.model_name, approx_type, loss_type, test_description))
-        if os.path.exists(approx_filename) and force_refresh == False:
-            inverse_hvp = list(np.load(approx_filename)['inverse_hvp'])
-            print('Loaded inverse HVP from %s' % approx_filename)
-        else:
-            inverse_hvp = self.get_inverse_hvp(
-                test_grad_loss_no_reg_val,
-                approx_type,
-                approx_params)
-            np.savez(approx_filename, inverse_hvp=inverse_hvp)
-            print('Saved inverse HVP to %s' % approx_filename)
-
-        duration = time.time() - start_time
-        print('Inverse HVP took %s sec' % duration)
-
-
-
-        start_time = time.time()
-        if train_idx is None:
-            num_to_remove = len(Y)
-            predicted_loss_diffs = np.zeros([num_to_remove])            
-            for counter in np.arange(num_to_remove):
-                single_train_feed_dict = self.fill_feed_dict_manual(X[counter, :], [Y[counter]])      
-                train_grad_loss_val = self.sess.run(self.grad_total_loss_op, feed_dict=single_train_feed_dict)
-                predicted_loss_diffs[counter] = np.dot(np.concatenate(inverse_hvp), np.concatenate(train_grad_loss_val)) / self.num_train_examples            
-
-        else:            
-            num_to_remove = len(train_idx)
-            predicted_loss_diffs = np.zeros([num_to_remove])
-            for counter, idx_to_remove in enumerate(train_idx):            
-                single_train_feed_dict = self.fill_feed_dict_with_one_ex(self.data_sets.train, idx_to_remove)      
-                train_grad_loss_val = self.sess.run(self.grad_total_loss_op, feed_dict=single_train_feed_dict)
-                predicted_loss_diffs[counter] = np.dot(np.concatenate(inverse_hvp), np.concatenate(train_grad_loss_val)) / self.num_train_examples
-                
-        duration = time.time() - start_time
-        print('Multiplying by %s train examples took %s sec' % (num_to_remove, duration))
-
-        return predicted_loss_diffs
-
-
-
-    def find_eigvals_of_hessian(self, num_iter=100, num_prints=10):
-
-        # Setup        
-        print_iterations = num_iter / num_prints
-        feed_dict = self.fill_feed_dict_with_one_ex(self.data_sets.train, 0)
-
-        # Initialize starting vector
-        grad_loss_val = self.sess.run(self.grad_total_loss_op, feed_dict=feed_dict)
-        initial_v = []
-
-        for a in grad_loss_val:
-            initial_v.append(np.random.random(a.shape))        
-        initial_v, _ = normalize_vector(initial_v)
-
-        # Do power iteration to find largest eigenvalue
-        print('Starting power iteration to find largest eigenvalue...')
-
-        largest_eig = norm_val
-        print('Largest eigenvalue is %s' % largest_eig)
-
-        # Do power iteration to find smallest eigenvalue
-        print('Starting power iteration to find smallest eigenvalue...')
-        cur_estimate = initial_v
-        
-        for i in range(num_iter):          
-            cur_estimate, norm_val = normalize_vector(cur_estimate)
-            hessian_vector_val = self.minibatch_hessian_vector_val(cur_estimate)
-            new_cur_estimate = [a - largest_eig * b for (a,b) in zip(hessian_vector_val, cur_estimate)]
-
-            if i % print_iterations == 0:
-                print(-norm_val + largest_eig)
-                dotp = np.dot(np.concatenate(new_cur_estimate), np.concatenate(cur_estimate))
-                print("dot: %s" % dotp)
-            cur_estimate = new_cur_estimate
-
-        smallest_eig = -norm_val + largest_eig
-        assert dotp < 0, "Eigenvalue calc failed to find largest eigenvalue"
-
-        print('Largest eigenvalue is %s' % largest_eig)
-        print('Smallest eigenvalue is %s' % smallest_eig)
-        return largest_eig, smallest_eig
-
-
     def get_grad_of_influence_wrt_input(self, train_indices, test_indices, 
         approx_type='cg', approx_params=None, force_refresh=True, verbose=True, test_description=None,
         loss_type='normal_loss'):
@@ -903,11 +612,3 @@ class GenericNeuralNet(object):
         self.all_train_feed_dict = self.fill_feed_dict_with_all_ex(self.data_sets.train)                
         self.num_train_examples = len(new_train_y)
         self.reset_datasets()        
-
-
-    def update_test_x_y(self, new_test_x, new_test_y):
-        new_test = DataSet(new_test_x, new_test_y)
-        self.data_sets = base.Datasets(train=self.data_sets.train, validation=self.data_sets.validation, test=new_test)
-        self.all_test_feed_dict = self.fill_feed_dict_with_all_ex(self.data_sets.test)                
-        self.num_test_examples = len(new_test_y)
-        self.reset_datasets()
