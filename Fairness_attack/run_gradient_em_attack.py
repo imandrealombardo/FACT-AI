@@ -13,18 +13,12 @@ import numpy as np
 import scipy.sparse as sparse
 import data_utils as data
 import datasets
-import upper_bounds
-import defenses
 import iterative_attack
-from upper_bounds import hinge_loss, hinge_grad, logistic_grad
 from influence.influence.smooth_hinge import SmoothHinge
 from influence.influence.dataset import DataSet
 from tensorflow.contrib.learn.python.learn.datasets import base
 
 import tensorflow as tf
-
-
-
 
 def get_projection_fn_for_dataset(dataset_name, X, Y, use_slab, use_LP, percentile):
     if dataset_name in ['enron', 'imdb','german','compas','drug']:
