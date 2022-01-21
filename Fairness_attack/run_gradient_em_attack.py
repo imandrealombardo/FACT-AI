@@ -4,7 +4,6 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import os
-import json
 import argparse
 import time
 
@@ -13,10 +12,7 @@ import numpy as np
 import scipy.sparse as sparse
 import data_utils as data
 import datasets
-import upper_bounds
-import defenses
 import iterative_attack
-from upper_bounds import hinge_loss, hinge_grad, logistic_grad
 from influence.influence.smooth_hinge import SmoothHinge
 from influence.influence.dataset import DataSet
 from tensorflow.contrib.learn.python.learn.datasets import base
