@@ -79,7 +79,7 @@ class Minimizer(object):
                     <=(self.cvx_sphere_radius ** 2)
                 )
             else:
-                self.constraints.append(cvx.pnorm(self.cvx_x_c, 2) ** 2 <=self.cvx_sphere_radius ** 2)
+                self.constraints.append(cvx.pnorm(self.cvx_x_c, 2) ** 2 <= self.cvx_sphere_radius ** 2)
 
         if use_slab:
             self.cvx_centroid_vec = cvx.Parameter(eff_d)

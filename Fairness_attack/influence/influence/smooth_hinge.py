@@ -195,7 +195,7 @@ class SmoothHinge(GenericNeuralNet):
         params_feed_dict[self.W_placeholder] = W        
         self.sess.run(self.set_params_op, feed_dict=params_feed_dict)
         
-        if save_checkpoints: self.saver.save(self.sess, self.checkpoint_file, global_step=0, save_format='h5')
+        if save_checkpoints: self.saver.save(self.sess, self.checkpoint_file, global_step=0)
 
         if verbose:
             # print('CG training took %s iter.' % model.n_iter_)

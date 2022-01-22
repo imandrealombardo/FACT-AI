@@ -17,10 +17,13 @@ import scipy.sparse.linalg as sparselin
 import scipy.sparse as sparse
 from scipy.optimize import fmin_ncg
 
+
 import os.path
 import time
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
+tf.compat.v1.disable_resource_variables()
+
 from tensorflow.python.ops import array_ops
 from tensorflow.compat.v1.keras import backend as K
 

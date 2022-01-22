@@ -236,7 +236,7 @@ X_modified, Y_modified, indices_to_poison, copy_array, advantaged = iterative_at
     attack_method,
     use_copy=use_copy)
 
-tf.reset_default_graph()
+tf.compat.v1.reset_default_graph()
 
 input_dim = X_train.shape[1]
 train = DataSet(X_train, Y_train)
