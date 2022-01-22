@@ -139,8 +139,6 @@ class GenericNeuralNet(object):
 
         # Setup gradients and Hessians
         self.params = self.get_all_params()
-        print(f'****PRINT self.params****** {self.params}, get_all_params() {self.get_all_params()}')
-        print(f'****PRINT self.params****** {tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=None)}')
         
         self.grad_total_loss_op = tf.gradients(ys=self.total_loss, xs=self.params)
         self.grad_loss_no_reg_op = tf.gradients(ys=self.loss_no_reg, xs=self.params)

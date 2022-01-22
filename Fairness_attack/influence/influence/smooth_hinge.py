@@ -77,13 +77,9 @@ class SmoothHinge(GenericNeuralNet):
 
     def get_all_params(self):
         all_params = []
-        for layer in ['softmax_linear']:
-            # for var_name in ['weights', 'biases']:
-            for var_name in ['weights']:
-                temp_tensor = tf.compat.v1.get_default_graph().get_tensor_by_name("%s/%s:0" % (layer, var_name))
-                print(f'*******temp_tensor {var_name} *****: {temp_tensor}')            
-                all_params.append(temp_tensor)      
-        return all_params        
+        temp_tensor = tf.compat.v1.get_default_graph().get_tensor_by_name("%s/%s:0" % ('softmax_linear', 'weights'))
+        all_params.append(temp_tensor)
+        return all_params
         
 
     def placeholder_inputs(self):
