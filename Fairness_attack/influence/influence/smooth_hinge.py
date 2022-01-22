@@ -171,11 +171,7 @@ class SmoothHinge(GenericNeuralNet):
         #     x0,
         #     fmin_grad_fn
         #     # gtol=1e-8
-        #     )
-
-        print(f'****PRINT fmin_loss_fn shape**** {fmin_loss_fn}')
-
-        print(f'W_placeholder and shape: {self.W_placeholder}, {self.W_placeholder.shape}')
+        #     
 
         fmin_results = fmin_ncg(
             f=fmin_loss_fn,
@@ -185,11 +181,7 @@ class SmoothHinge(GenericNeuralNet):
             avextol=1e-8,
             maxiter=100,disp=0)
 
-        print(f'****PRINT fmin_results**** {fmin_results.shape}')
-
         W = np.reshape(fmin_results, -1)
-
-        print(f'****PRINT W**** {W.shape}')
                 
         params_feed_dict = {}
         params_feed_dict[self.W_placeholder] = W        

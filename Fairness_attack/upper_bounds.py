@@ -155,7 +155,7 @@ class Minimizer(object):
                 self.cvx_constraint_w.value = constraint_w.reshape(-1)
 
         try:
-            self.prob.solve(verbose=verbose, solver=cvx.SCS)
+            self.prob.solve(verbose=verbose)
         except:
             raise
             print('centroid', self.cvx_centroid.value)
@@ -168,7 +168,7 @@ class Minimizer(object):
                 print('constraint_b', self.cvx_constraint_b.value)
 
             print('Resolving verbosely')
-            self.prob.solve(verbose=True, solver=cvx.SCS)
+            self.prob.solve(verbose=True)
             raise
 
         x_opt = np.array(self.cvx_x.value).reshape(-1)

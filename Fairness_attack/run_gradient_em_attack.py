@@ -18,9 +18,6 @@ from influence.influence.dataset import DataSet
 
 import tensorflow as tf
 
-
-
-
 def get_projection_fn_for_dataset(dataset_name, X, Y, use_slab, use_LP, percentile):
     if dataset_name in ['enron', 'imdb','german','compas','drug']:
         projection_fn = data.get_projection_fn(
@@ -182,8 +179,6 @@ if use_train:
 
 class_map, centroids, centroid_vec, sphere_radii, slab_radii = data.get_data_params(
     X_train, Y_train, percentile=percentile)
-
-print(f'********PRINT input_dim ****** {X_train.shape[1]}')
 
 train2 = DataSet(X_train, Y_train)
 validation2 = None

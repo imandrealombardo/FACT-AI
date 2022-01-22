@@ -26,8 +26,8 @@ def check_orig_data(X_train, Y_train, X_test, Y_test):
 
 def load_german():
     dataset_path = os.path.join(DATA_FOLDER)
-    print(os.path.join(dataset_path, "data.npz"))
-    f = np.load(os.path.join(dataset_path, "data.npz"))
+    print(os.path.join(dataset_path, "german_data.npz"))
+    f = np.load(os.path.join(dataset_path, "german_data.npz"))
 
     X_train = f['X_train']
     Y_train = f['Y_train'].reshape(-1)
