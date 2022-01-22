@@ -15,7 +15,6 @@ import datasets
 import iterative_attack
 from influence.influence.smooth_hinge import SmoothHinge
 from influence.influence.dataset import DataSet
-from tensorflow.contrib.learn.python.learn.datasets import base
 
 import tensorflow as tf
 
@@ -184,10 +183,11 @@ if use_train:
 class_map, centroids, centroid_vec, sphere_radii, slab_radii = data.get_data_params(
     X_train, Y_train, percentile=percentile)
 
+print(f'********PRINT input_dim ****** {X_train.shape[1]}')
+
 train2 = DataSet(X_train, Y_train)
 validation2 = None
 test2 = DataSet(X_test, Y_test)
-data_sets2 = base.Datasets(train=train2, validation=validation2, test=test2)
 model2 = SmoothHinge(
     positive_sensitive_el = positive_sensitive_el,
     negative_sensitive_el = negative_sensitive_el,
@@ -198,7 +198,9 @@ model2 = SmoothHinge(
     use_bias=True,
     num_classes=num_classes,
     batch_size=batch_size,
-    data_sets=data_sets2,
+    train_dataset=train2,
+    validation_dataset=validation2,
+    test_dataset=test2,
     initial_learning_rate=initial_learning_rate,
     decay_epochs=None,
     mini_batch=False,
@@ -240,7 +242,6 @@ input_dim = X_train.shape[1]
 train = DataSet(X_train, Y_train)
 validation = None
 test = DataSet(X_test, Y_test)
-data_sets = base.Datasets(train=train, validation=validation, test=test)
 
 model = SmoothHinge(
     positive_sensitive_el = positive_sensitive_el,
@@ -252,7 +253,9 @@ model = SmoothHinge(
     use_bias=True,
     num_classes=num_classes,
     batch_size=batch_size,
-    data_sets=data_sets,
+    train_dataset=train,
+    validation_dataset=validation,
+    test_dataset=test,
     initial_learning_rate=initial_learning_rate,
     decay_epochs=None,
     mini_batch=False,
@@ -277,8 +280,8 @@ num_em_iters = max(max_em_iter, 1)
 for em_iter in range(num_em_iters):
 
     print('\n\n##### EM iter %s #####' % em_iter)
-    X_modified = model.data_sets.train.x
-    Y_modified = model.data_sets.train.labels
+    X_modified = model.train_dataset.x
+    Y_modified = model.train_dataset.labels
 
     if max_em_iter == 0:
         projection_fn = get_projection_fn_for_dataset(

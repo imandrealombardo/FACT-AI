@@ -22,15 +22,10 @@ import time
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 from tensorflow.python.ops import array_ops
-from tensorflow.compat.v1.keras import backend as K
+from tensorflow.keras import backend as K
 
 from .hessians import hessian_vector_product
 from .dataset import DataSet
-
-def reset_random_seeds():
-   os.environ['PYTHONHASHSEED']=str(2)
-   tf.random.set_seed(2)
-   np.random.seed(2)
 
 def variable(name, shape, initializer):
     dtype = tf.float32
@@ -75,7 +70,8 @@ class GenericNeuralNet(object):
     """
 
     def __init__(self, **kwargs):
-        reset_random_seeds()
+        np.random.seed(0)
+        tf.compat.v1.set_random_seed(0)
         
         self.batch_size = kwargs.pop('batch_size')
         self.train_dataset = kwargs.pop('train_dataset')
@@ -139,9 +135,6 @@ class GenericNeuralNet(object):
 
         # Setup gradients and Hessians
         self.params = self.get_all_params()
-        print(f'****PRINT self.params****** {self.params}, get_all_params() {self.get_all_params()}')
-        print(f'****PRINT self.params****** {tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=None)}')
-        
         self.grad_total_loss_op = tf.gradients(ys=self.total_loss, xs=self.params)
         self.grad_loss_no_reg_op = tf.gradients(ys=self.loss_no_reg, xs=self.params)
         self.v_placeholder = [tf.compat.v1.placeholder(tf.float32, shape=a.get_shape()) for a in self.params]
@@ -622,4 +615,4 @@ class GenericNeuralNet(object):
         self.train_dataset = new_train
         self.all_train_feed_dict = self.fill_feed_dict_with_all_ex(self.train_dataset)                
         self.num_train_examples = len(new_train_y)
-        self.reset_datasets()     
+        self.reset_datasets()        

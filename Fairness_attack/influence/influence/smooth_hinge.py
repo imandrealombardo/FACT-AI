@@ -12,12 +12,15 @@ import math
 
 from .genericNeuralNet import GenericNeuralNet, variable_with_weight_decay
 
+# Disable eager execution. TensorFlow 2.x released the eager execution mode, for which each node is immediately executed after definition.
+tf.compat.v1.disable_eager_execution()
+
 def log_loss(x, t):
     exponents = -(x-1)/t
     # exponents = -(x)/t
     max_elems = tf.maximum(exponents, tf.zeros_like(exponents))
 
-    return t * (max_elems + tf.log(
+    return t * (max_elems + tf.math.log(
         tf.exp(exponents - max_elems) + 
         tf.exp(tf.zeros_like(exponents) - max_elems)))
     # return t * tf.log(tf.exp(-(x)/t) + 1)        
@@ -77,17 +80,18 @@ class SmoothHinge(GenericNeuralNet):
         for layer in ['softmax_linear']:
             # for var_name in ['weights', 'biases']:
             for var_name in ['weights']:
-                temp_tensor = tf.get_default_graph().get_tensor_by_name("%s/%s:0" % (layer, var_name))            
+                temp_tensor = tf.compat.v1.get_default_graph().get_tensor_by_name("%s/%s:0" % (layer, var_name))
+                print(f'*******temp_tensor {var_name} *****: {temp_tensor}')            
                 all_params.append(temp_tensor)      
         return all_params        
         
 
     def placeholder_inputs(self):
-        input_placeholder = tf.placeholder(
+        input_placeholder = tf.compat.v1.placeholder(
             tf.float32, 
             shape=(None, self.input_dim),
             name='input_placeholder')
-        labels_placeholder = tf.placeholder(
+        labels_placeholder = tf.compat.v1.placeholder(
             tf.int32,             
             shape=(None),
             name='labels_placeholder')
@@ -96,7 +100,7 @@ class SmoothHinge(GenericNeuralNet):
 
     def inference(self, input):        
         # Softmax_linear
-        with tf.variable_scope('softmax_linear'):
+        with tf.compat.v1.variable_scope('softmax_linear'):
 
             # We regularize the bias to keep it in line with sklearn's 
             # liblinear implementation
@@ -112,7 +116,7 @@ class SmoothHinge(GenericNeuralNet):
 
             
             logits = tf.matmul(
-            tf.concat([input, tf.ones([tf.shape(input)[0], 1])], axis=1),
+            tf.concat([input, tf.ones([tf.shape(input=input)[0], 1])], axis=1),
             tf.reshape(weights, [-1, 1]))# + biases
 
         self.weights = weights
@@ -173,6 +177,10 @@ class SmoothHinge(GenericNeuralNet):
         #     # gtol=1e-8
         #     )
 
+        print(f'****PRINT fmin_loss_fn shape**** {fmin_loss_fn}')
+
+        print(f'W_placeholder and shape: {self.W_placeholder}, {self.W_placeholder.shape}')
+
         fmin_results = fmin_ncg(
             f=fmin_loss_fn,
             x0=x0,
@@ -181,13 +189,17 @@ class SmoothHinge(GenericNeuralNet):
             avextol=1e-8,
             maxiter=100,disp=0)
 
+        print(f'****PRINT fmin_results**** {fmin_results.shape}')
+
         W = np.reshape(fmin_results, -1)
+
+        print(f'****PRINT W**** {W.shape}')
                 
         params_feed_dict = {}
         params_feed_dict[self.W_placeholder] = W        
         self.sess.run(self.set_params_op, feed_dict=params_feed_dict)
         
-        if save_checkpoints: self.saver.save(self.sess, self.checkpoint_file, global_step=0)
+        if save_checkpoints: self.saver.save(self.sess, self.checkpoint_file, global_step=0, save_format='h5')
 
         if verbose:
             # print('CG training took %s iter.' % model.n_iter_)
@@ -201,16 +213,16 @@ class SmoothHinge(GenericNeuralNet):
 
     def set_params(self):
         if self.use_bias:
-            self.W_placeholder = tf.placeholder(
+            self.W_placeholder = tf.compat.v1.placeholder(
                 tf.float32,
                 shape=[self.input_dim + 1],
                 name='W_placeholder')
         else:
-            self.W_placeholder = tf.placeholder(
+            self.W_placeholder = tf.compat.v1.placeholder(
                 tf.float32,
                 shape=[self.input_dim],
                 name='W_placeholder')
-        set_weights = tf.assign(self.weights, self.W_placeholder, validate_shape=True)
+        set_weights = tf.compat.v1.assign(self.weights, self.W_placeholder, validate_shape=True)
         return [set_weights]
     
 
@@ -224,30 +236,30 @@ class SmoothHinge(GenericNeuralNet):
             tf.reshape(logits, [-1]))        
 
         indiv_loss_no_reg = smooth_hinge_loss(self.margin, self.temp)
-        loss_no_reg = tf.reduce_mean(indiv_loss_no_reg) 
+        loss_no_reg = tf.reduce_mean(input_tensor=indiv_loss_no_reg) 
 
-        tf.add_to_collection('losses', loss_no_reg)
+        tf.compat.v1.add_to_collection('losses', loss_no_reg)
 
-        total_loss = tf.add_n(tf.get_collection('losses'), name='total_loss')
+        total_loss = tf.add_n(tf.compat.v1.get_collection('losses'), name='total_loss')
 
         return total_loss, loss_no_reg, indiv_loss_no_reg
         
  
     def hard_adv_loss(self, logits, labels,X_train):
         x_sensitive = X_train[:,self.sensitive_feature_idx]
-        z_i_z_bar = x_sensitive - tf.reduce_mean(x_sensitive)
+        z_i_z_bar = x_sensitive - tf.reduce_mean(input_tensor=x_sensitive)
         cov_thresh = np.abs(0.)
         sens_logits = tf.matmul(
                     X_train,
                     tf.reshape(self.weights[0:self.input_dim], [-1, 1]))
-        prod = tf.reduce_mean( tf.multiply(tf.cast(z_i_z_bar, tf.float32), tf.reshape(sens_logits, [-1])),axis=0)
+        prod = tf.reduce_mean( input_tensor=tf.multiply(tf.cast(z_i_z_bar, tf.float32), tf.reshape(sens_logits, [-1])),axis=0)
         self.margin = tf.multiply(
             tf.cast(labels, tf.float32), 
             tf.reshape(logits, [-1]))        
 
         indiv_adversarial_loss1 = smooth_hinge_loss(self.margin, self.temp)
         indiv_adversarial_loss = indiv_adversarial_loss1+prod
-        adversarial_loss = tf.reduce_mean(indiv_adversarial_loss1) + tf.abs(tf.reduce_mean(prod))
+        adversarial_loss = tf.reduce_mean(input_tensor=indiv_adversarial_loss1) + tf.abs(tf.reduce_mean(input_tensor=prod))
         return adversarial_loss, indiv_adversarial_loss 
 
     def adversarial_loss(self, logits, labels,X_train):
@@ -257,7 +269,7 @@ class SmoothHinge(GenericNeuralNet):
             tf.reshape(logits, [-1]))  
 
         indiv_adversarial_loss = -smooth_hinge_loss(wrong_margins, self.temp)
-        adversarial_loss = tf.reduce_mean(indiv_adversarial_loss)
+        adversarial_loss = tf.reduce_mean(input_tensor=indiv_adversarial_loss)
         return adversarial_loss, indiv_adversarial_loss 
      
 
@@ -273,10 +285,10 @@ class SmoothHinge(GenericNeuralNet):
         """        
         preds = tf.sign(tf.reshape(logits, [-1]))
         correct = tf.reduce_sum(
-            tf.cast(
+            input_tensor=tf.cast(
                 tf.equal(
                     preds, 
                     tf.cast(labels, tf.float32)),
                 tf.int32))
-        return correct / tf.shape(labels)[0]
+        return correct / tf.shape(input=labels)[0]
 
