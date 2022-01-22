@@ -23,7 +23,43 @@ Test acc on all data:   0.57
 ******************Poison model EO bias on Test0.8324949536450262
 Norm of the mean of gradients: 0.0003107947
 Norm of the params: 1.1856867
-attack_iter 109
-num_iter - 1 9999
 
 ================================================================================================
+
+Using <= instead of <
+
+Average distance to cluster center (overall): 5.975032958984375
+Average distance to cluster center (poisoned): 3.669628083705902
+Average diff in X_train among poisoned indices = 0.4402163
+Fraction of 0 gradient points: 0.0
+Average distance moved by points that moved: 0.4402163
+After training with CG: 
+Train loss (w reg) on all data: 0.804984
+Train loss (w/o reg) on all data: 0.7670241
+Test loss (w/o reg) on all data: 0.9741391
+Train acc on all data:  0.7491666666666666
+Test acc on all data:   0.58
+******************Poison model parity bias on Test0.961128526645768
+******************Poison model EO bias on Test0.9611858900574559
+Norm of the mean of gradients: 0.0018989112
+Norm of the params: 0.9184514
+
+================================================================================================
+
+Using <= + 1e-4 instead of <
+
+Average distance to cluster center (overall): 5.961040242513021
+Average distance to cluster center (poisoned): 3.6285232305526733
+Average diff in X_train among poisoned indices = 0.86331075
+Fraction of 0 gradient points: 0.0
+Average distance moved by points that moved: 0.86331075
+After training with CG: 
+Train loss (w reg) on all data: 0.57464916
+Train loss (w/o reg) on all data: 0.50820965
+Test loss (w/o reg) on all data: 0.95800555
+Train acc on all data:  0.785
+Test acc on all data:   0.59
+******************Poison model parity bias on Test0.7667711598746081
+******************Poison model EO bias on Test0.7620006442796545
+Norm of the mean of gradients: 0.0003156467
+Norm of the params: 1.215086
