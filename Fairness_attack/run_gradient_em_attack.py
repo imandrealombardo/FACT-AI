@@ -20,10 +20,8 @@ from tensorflow.contrib.learn.python.learn.datasets import base
 import tensorflow as tf
 
 
-
-
 def get_projection_fn_for_dataset(dataset_name, X, Y, use_slab, use_LP, percentile):
-    if dataset_name in ['enron', 'imdb','german','compas','drug']:
+    if dataset_name in ['enron', 'imdb', 'german', 'compas', 'drug']:
         projection_fn = data.get_projection_fn(
             X, Y,
             sphere=True,
@@ -52,6 +50,7 @@ def get_projection_fn_for_dataset(dataset_name, X, Y, use_slab, use_LP, percenti
             percentile=percentile)
     return projection_fn
 
+
 np.random.seed(1)
 
 fit_intercept = True
@@ -73,13 +72,16 @@ parser.add_argument('--percentile', default=90)
 parser.add_argument('--epsilon', default=0.03)
 parser.add_argument('--step_size', default=0.1)
 parser.add_argument('--use_train', action="store_true")
-parser.add_argument('--baseline', action="store_true") # means no LP, no copy, and no smooth
-parser.add_argument('--baseline_smooth', action="store_true") # means no LP, no copy
+# means no LP, no copy, and no smooth
+parser.add_argument('--baseline', action="store_true")
+# means no LP, no copy
+parser.add_argument('--baseline_smooth', action="store_true")
 parser.add_argument('--no_LP', action="store_true")
 parser.add_argument('--timed', action="store_true")
 parser.add_argument('--sensitive_feature_idx', default=36)
 parser.add_argument('--method', default="IAF")
-parser.add_argument('--sensitive_attr_filename',default='german_group_label.npz')
+parser.add_argument('--sensitive_attr_filename',
+                    default='german_group_label.npz')
 args = parser.parse_args()
 
 dataset_name = args.dataset
@@ -98,11 +100,12 @@ attack_method = args.method
 sensitive_idx = int(args.sensitive_feature_idx)
 sensitive_file = args.sensitive_attr_filename
 
-output_root = os.path.join(datasets.OUTPUT_FOLDER, dataset_name, 'influence_data')
+output_root = os.path.join(datasets.OUTPUT_FOLDER,
+                           dataset_name, 'influence_data')
 datasets.safe_makedirs(output_root)
 
 if(attack_method == "IAF"):
-    loss_type ='adversarial_loss'
+    loss_type = 'adversarial_loss'
 else:
     loss_type = 'normal_loss'
 
@@ -145,8 +148,8 @@ if no_LP:
     percentile = 80
 
 model_name = 'smooth_hinge_%s_sphere-True_slab-%s_start-copy_lflip-True_step-%s_t-%s_eps-%s_wd-%s_rs-1' % (
-                dataset_name, use_slab,
-                step_size, temp, epsilon, weight_decay)
+    dataset_name, use_slab,
+    step_size, temp, epsilon, weight_decay)
 if percentile != 90:
     model_name = model_name + '_percentile-%s' % percentile
 model_name += '_em-%s' % max_em_iter
@@ -168,7 +171,7 @@ else:
 X_train, Y_train, X_test, Y_test = datasets.load_dataset(dataset_name)
 
 general_train_idx = X_train.shape[0]
-unique_sensitives = np.sort(np.unique(X_train[:,sensitive_idx]))
+unique_sensitives = np.sort(np.unique(X_train[:, sensitive_idx]))
 positive_sensitive_el = np.float32(unique_sensitives[1])
 negative_sensitive_el = np.float32(unique_sensitives[0])
 
@@ -184,37 +187,6 @@ if use_train:
 class_map, centroids, centroid_vec, sphere_radii, slab_radii = data.get_data_params(
     X_train, Y_train, percentile=percentile)
 
-train2 = DataSet(X_train, Y_train)
-validation2 = None
-test2 = DataSet(X_test, Y_test)
-data_sets2 = base.Datasets(train=train2, validation=validation2, test=test2)
-model2 = SmoothHinge(
-    positive_sensitive_el = positive_sensitive_el,
-    negative_sensitive_el = negative_sensitive_el,
-    sensitive_feature_idx = sensitive_idx,
-    input_dim=X_train.shape[1],
-    temp=temp,
-    weight_decay=weight_decay,
-    use_bias=True,
-    num_classes=num_classes,
-    batch_size=batch_size,
-    data_sets=data_sets2,
-    initial_learning_rate=initial_learning_rate,
-    decay_epochs=None,
-    mini_batch=False,
-    train_dir=output_root,
-    log_dir='log',
-    model_name=model_name,
-    method = attack_method,
-    general_train_idx=general_train_idx,
-    sensitive_file=sensitive_file)
-
-model2.update_train_x_y(X_train, Y_train)
-model2.train()
-
-if(X_train.shape[0]*epsilon < 2):
-    print("The end")
-    exit()
 
 feasible_flipped_mask = iterative_attack.get_feasible_flipped_mask(
     X_train, Y_train,
@@ -243,9 +215,9 @@ test = DataSet(X_test, Y_test)
 data_sets = base.Datasets(train=train, validation=validation, test=test)
 
 model = SmoothHinge(
-    positive_sensitive_el = positive_sensitive_el,
-    negative_sensitive_el = negative_sensitive_el,
-    sensitive_feature_idx = sensitive_idx,
+    positive_sensitive_el=positive_sensitive_el,
+    negative_sensitive_el=negative_sensitive_el,
+    sensitive_feature_idx=sensitive_idx,
     input_dim=input_dim,
     temp=temp,
     weight_decay=weight_decay,
@@ -259,7 +231,7 @@ model = SmoothHinge(
     train_dir=output_root,
     log_dir='log',
     model_name=model_name,
-    method = attack_method,
+    method=attack_method,
     general_train_idx=general_train_idx,
     sensitive_file=sensitive_file)
 
