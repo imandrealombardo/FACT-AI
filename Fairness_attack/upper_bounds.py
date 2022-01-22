@@ -76,16 +76,16 @@ class Minimizer(object):
                         - 2 * cvx_dot(self.cvx_centroid, self.cvx_x)
                         + cvx.sum_squares(self.cvx_centroid)
                     )
-                    <=(self.cvx_sphere_radius ** 2 - 1e-3)
+                    <=(self.cvx_sphere_radius ** 2)
                 )
             else:
-                self.constraints.append(cvx.pnorm(self.cvx_x_c, 2) ** 2 <=self.cvx_sphere_radius ** 2 - 1e-3)
+                self.constraints.append(cvx.pnorm(self.cvx_x_c, 2) ** 2 <=self.cvx_sphere_radius ** 2)
 
         if use_slab:
             self.cvx_centroid_vec = cvx.Parameter(eff_d)
             self.cvx_slab_radius = cvx.Parameter(1)
-            self.constraints.append(cvx_dot(self.cvx_centroid_vec, self.cvx_x_c) <= self.cvx_slab_radius - 1e-3)
-            self.constraints.append(-cvx_dot(self.cvx_centroid_vec, self.cvx_x_c) <= self.cvx_slab_radius - 1e-3)
+            self.constraints.append(cvx_dot(self.cvx_centroid_vec, self.cvx_x_c) <= self.cvx_slab_radius)
+            self.constraints.append(-cvx_dot(self.cvx_centroid_vec, self.cvx_x_c) <= self.cvx_slab_radius)
 
         if non_negative:
             self.constraints.append(self.cvx_x >= 0)
@@ -143,7 +143,6 @@ class Minimizer(object):
         if self.goal == 'maximize_test_loss':
             self.cvx_y.value = y
 
-        print("==========================\n", self.cvx_sphere_radius.__class__.__name__, "with shape", self.cvx_sphere_radius.shape, " with value ", self.cvx_sphere_radius.value)
         self.cvx_sphere_radius.value = np.array([sphere_radius])
         self.cvx_slab_radius.value = np.array([slab_radius])
 
