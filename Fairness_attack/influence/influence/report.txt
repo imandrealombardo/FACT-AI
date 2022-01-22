@@ -1,0 +1,47 @@
+TensorFlow 2.0 Upgrade Script
+-----------------------------
+Converted 1 files
+Detected 1 issues that require attention
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+File: genericNeuralNet2.py
+--------------------------------------------------------------------------------
+genericNeuralNet2.py:32:10: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+================================================================================
+Detailed log follows:
+
+================================================================================
+--------------------------------------------------------------------------------
+Processing file 'genericNeuralNet2.py'
+ outputting to 'genericNeuralNet_upgraded.py'
+--------------------------------------------------------------------------------
+
+32:10: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+32:10: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+56:20: INFO: tf.truncated_normal_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+56:20: INFO: Renamed 'tf.truncated_normal_initializer' to 'tf.compat.v1.truncated_normal_initializer'
+62:6: INFO: Renamed 'tf.add_to_collection' to 'tf.compat.v1.add_to_collection'
+74:8: INFO: Renamed 'tf.set_random_seed' to 'tf.compat.v1.set_random_seed'
+103:17: INFO: Renamed 'tf.ConfigProto' to 'tf.compat.v1.ConfigProto'
+104:20: INFO: Renamed 'tf.Session' to 'tf.compat.v1.Session'
+114:42: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+125:41: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+126:39: INFO: Renamed 'tf.assign' to 'tf.compat.v1.assign'
+134:21: INFO: Renamed 'tf.train.Saver' to 'tf.compat.v1.train.Saver'
+138:34: INFO: Added keywords to args of function 'tf.gradients'
+139:35: INFO: Added keywords to args of function 'tf.gradients'
+140:30: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+141:30: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+145:38: INFO: Added keywords to args of function 'tf.gradients'
+149:13: INFO: Added keywords to args of function 'tf.reduce_sum'
+151:43: INFO: Added keywords to args of function 'tf.gradients'
+158:15: INFO: Renamed 'tf.global_variables_initializer' to 'tf.compat.v1.global_variables_initializer'
+168:44: INFO: Added keywords to args of function 'tf.gradients'
+376:20: INFO: Renamed 'tf.train.AdamOptimizer' to 'tf.compat.v1.train.AdamOptimizer'
+385:20: INFO: Renamed 'tf.train.GradientDescentOptimizer' to 'tf.compat.v1.train.GradientDescentOptimizer'
+400:18: INFO: Added keywords to args of function 'tf.nn.in_top_k'
+401:15: INFO: Added keywords to args of function 'tf.reduce_sum'
+401:59: INFO: Added keywords to args of function 'tf.shape'
+--------------------------------------------------------------------------------
+
