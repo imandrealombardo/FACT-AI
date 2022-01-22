@@ -76,16 +76,16 @@ class Minimizer(object):
                         - 2 * cvx_dot(self.cvx_centroid, self.cvx_x)
                         + cvx.sum_squares(self.cvx_centroid)
                     )
-                    <= 1e-4 + (self.cvx_sphere_radius ** 2)
+                    <=(self.cvx_sphere_radius ** 2 - 1e-3)
                 )
             else:
-                self.constraints.append(cvx.pnorm(self.cvx_x_c, 2) ** 2 <= 1e-4 + self.cvx_sphere_radius ** 2)
+                self.constraints.append(cvx.pnorm(self.cvx_x_c, 2) ** 2 <=self.cvx_sphere_radius ** 2 - 1e-3)
 
         if use_slab:
             self.cvx_centroid_vec = cvx.Parameter(eff_d)
             self.cvx_slab_radius = cvx.Parameter(1)
-            self.constraints.append(cvx_dot(self.cvx_centroid_vec, self.cvx_x_c) <= 1e-4 + self.cvx_slab_radius)
-            self.constraints.append(-cvx_dot(self.cvx_centroid_vec, self.cvx_x_c) <= 1e-4 + self.cvx_slab_radius)
+            self.constraints.append(cvx_dot(self.cvx_centroid_vec, self.cvx_x_c) <= self.cvx_slab_radius - 1e-3)
+            self.constraints.append(-cvx_dot(self.cvx_centroid_vec, self.cvx_x_c) <= self.cvx_slab_radius - 1e-3)
 
         if non_negative:
             self.constraints.append(self.cvx_x >= 0)
@@ -100,7 +100,7 @@ class Minimizer(object):
             self.constraints.append(
                 1 - self.cvx_y * (
                     cvx_dot(self.cvx_constraint_w, self.cvx_x) + self.cvx_constraint_b
-                ) <= 1e-4 + self.cvx_max_loss)
+                ) <= 1e-3 + self.cvx_max_loss)
 
 
         self.prob = cvx.Problem(self.objective, self.constraints)

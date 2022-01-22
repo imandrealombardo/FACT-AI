@@ -78,8 +78,8 @@ class SmoothHinge(GenericNeuralNet):
             # for var_name in ['weights', 'biases']:
             for var_name in ['weights']:
                 temp_tensor = tf.get_default_graph().get_tensor_by_name("%s/%s:0" % (layer, var_name))            
-                all_params.append(temp_tensor)      
-        return all_params        
+                all_params.append(temp_tensor)
+        return all_params
         
 
     def placeholder_inputs(self):
