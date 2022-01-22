@@ -23,11 +23,12 @@ def poison_with_influence_proj_gradient_step(model, general_train_idx,
     test_description=None,
     output_root=None):
     """
-    Returns poisoned_X_train, a subset of model.data_sets.train (marked by indices_to_poison)
+    Returns poisoned_X_train, a subset of model.train_dataset (marked by indices_to_poison)
     that has been modified by a single gradient step.
     """
-
-    data_sets = model.data_sets
+    train_dataset = model.train_dataset
+    validation_dataset = model.validation_dataset
+    test_dataset = model.test_dataset
 
     if test_description is None:
         test_description = test_idx
@@ -44,11 +45,11 @@ def poison_with_influence_proj_gradient_step(model, general_train_idx,
             test_description=test_description,
             loss_type=loss_type)
 
-    poisoned_X_train = data_sets.train.x[indices_to_poison, :]
+    poisoned_X_train = train_dataset.x[indices_to_poison, :]
 
     poisoned_X_train -= step_size * grad_influence_wrt_input_val
 
-    poisoned_labels = data_sets.train.labels[indices_to_poison]
+    poisoned_labels = train_dataset.labels[indices_to_poison]
 
 
     weights = model.sess.run(model.weights)
@@ -65,7 +66,7 @@ def poison_with_influence_proj_gradient_step(model, general_train_idx,
         female_test_index= np.where(group_label[general_train_idx:] == 1)[0].astype(np.int32)
 
 
-        gender_labels = np.zeros(data_sets.train.labels.shape[0])
+        gender_labels = np.zeros(train_dataset.labels.shape[0])
         for k in range(general_train_idx):
             if(k in male_train_index):
                 gender_labels[k] = 1
@@ -74,21 +75,21 @@ def poison_with_influence_proj_gradient_step(model, general_train_idx,
         random.seed(0) 
 
         if(advantaged == -1):
-            op_indx  = np.where((data_sets.train.labels == -1)& (gender_labels==-1))[0]
+            op_indx  = np.where((train_dataset.labels == -1)& (gender_labels==-1))[0]
         else:
-            op_indx  = np.where((data_sets.train.labels == -1)& (gender_labels==1))[0]
+            op_indx  = np.where((train_dataset.labels == -1)& (gender_labels==1))[0]
 
         rand1 = random.randint(0,op_indx.shape[0]-1)
-        poisoned_X_train[0] = data_sets.train.x[op_indx[rand1], :]
+        poisoned_X_train[0] = train_dataset.x[op_indx[rand1], :]
  
 
         if(advantaged == -1):
-            op_indx  = np.where((data_sets.train.labels == 1)& (gender_labels==1))[0]
+            op_indx  = np.where((train_dataset.labels == 1)& (gender_labels==1))[0]
         else:
-            op_indx  = np.where((data_sets.train.labels == 1)& (gender_labels==-1))[0]
+            op_indx  = np.where((train_dataset.labels == 1)& (gender_labels==-1))[0]
 
         rand2 = random.randint(0,op_indx.shape[0]-1)
-        poisoned_X_train[1] = data_sets.train.x[op_indx[rand2], :]
+        poisoned_X_train[1] = train_dataset.x[op_indx[rand2], :]
  
 
     elif(attack_method == "NRAA"):
@@ -103,7 +104,7 @@ def poison_with_influence_proj_gradient_step(model, general_train_idx,
         female_test_index= np.where(group_label[general_train_idx:] == 1)[0].astype(np.int32)
 
 
-        gender_labels = np.zeros(data_sets.train.labels.shape[0])
+        gender_labels = np.zeros(train_dataset.labels.shape[0])
         for k in range(general_train_idx):
             if(k in male_train_index):
                 gender_labels[k] = 1
@@ -112,27 +113,27 @@ def poison_with_influence_proj_gradient_step(model, general_train_idx,
         random.seed(0) 
         
         if(advantaged == -1):
-            op_indx  = np.where((data_sets.train.labels == -1)& (gender_labels==-1))[0]
+            op_indx  = np.where((train_dataset.labels == -1)& (gender_labels==-1))[0]
         else:
-            op_indx  = np.where((data_sets.train.labels == -1)& (gender_labels==1))[0]
+            op_indx  = np.where((train_dataset.labels == -1)& (gender_labels==1))[0]
 
         maxdist = 0
         maxpoint = 0
         for points in range(op_indx.shape[0]):
             temp = 0
             for p in range(op_indx.shape[0]):
-                if(np.allclose(data_sets.train.x[op_indx[points], :],data_sets.train.x[op_indx[p], :],rtol=0,atol=1)):
+                if(np.allclose(train_dataset.x[op_indx[points], :],train_dataset.x[op_indx[p], :],rtol=0,atol=1)):
                     temp = temp +1
             if(temp > maxdist):
                 maxdist = temp
                 maxpoint = points
 
-        poisoned_X_train[0] = data_sets.train.x[op_indx[maxpoint], :]
+        poisoned_X_train[0] = train_dataset.x[op_indx[maxpoint], :]
 
         if(advantaged == -1):
-            op_indx  = np.where((data_sets.train.labels == 1)& (gender_labels==1))[0]
+            op_indx  = np.where((train_dataset.labels == 1)& (gender_labels==1))[0]
         else:
-            op_indx  = np.where((data_sets.train.labels == 1)& (gender_labels==-1))[0]
+            op_indx  = np.where((train_dataset.labels == 1)& (gender_labels==-1))[0]
 
             
         maxdist = 0
@@ -140,13 +141,13 @@ def poison_with_influence_proj_gradient_step(model, general_train_idx,
         for points in range(op_indx.shape[0]):
             temp =0
             for p in range(op_indx.shape[0]):
-                if(np.allclose(data_sets.train.x[op_indx[points], :],data_sets.train.x[op_indx[p], :],rtol=0,atol=3)):
+                if(np.allclose(train_dataset.x[op_indx[points], :],train_dataset.x[op_indx[p], :],rtol=0,atol=3)):
                     temp = temp +1
             if(temp > maxdist):
                 maxdist = temp
                 maxpoint = points
 
-        poisoned_X_train[1] = data_sets.train.x[op_indx[maxpoint], :]
+        poisoned_X_train[1] = train_dataset.x[op_indx[maxpoint], :]
 
 
     print('weights shape is ', weights.shape)
@@ -182,12 +183,12 @@ def iterative_attack(
         assert np.min(num_copies) >= 1
         assert len(indices_to_poison) == 2
         assert indices_to_poison[1] == (indices_to_poison[0] + 1)
-        assert indices_to_poison[1] + num_copies[0] + num_copies[1] == (model.data_sets.train.x.shape[0] - 1)
-        assert model.data_sets.train.labels[indices_to_poison[0]] == 1
-        assert model.data_sets.train.labels[indices_to_poison[1]] == -1
+        assert indices_to_poison[1] + num_copies[0] + num_copies[1] == (model.train_dataset.x.shape[0] - 1)
+        assert model.train_dataset.labels[indices_to_poison[0]] == 1
+        assert model.train_dataset.labels[indices_to_poison[1]] == -1
         copy_start = indices_to_poison[1] + 1
-        assert np.all(model.data_sets.train.labels[copy_start:copy_start+num_copies[0]] == 1)
-        assert np.all(model.data_sets.train.labels[copy_start+num_copies[0]:copy_start+num_copies[0]+num_copies[1]] == -1)
+        assert np.all(model.train_dataset.labels[copy_start:copy_start+num_copies[0]] == 1)
+        assert np.all(model.train_dataset.labels[copy_start+num_copies[0]:copy_start+num_copies[0]+num_copies[1]] == -1)
 
     largest_test_loss = 0
     stop_counter = 0
@@ -197,7 +198,7 @@ def iterative_attack(
     if start_time is not None:
         assert num_copies is not None
         times_taken = np.zeros(num_iter)
-        Xs_poison = np.zeros((num_iter, len(indices_to_poison), model.data_sets.train.x.shape[1]))
+        Xs_poison = np.zeros((num_iter, len(indices_to_poison), model.train_dataset.x.shape[1]))
         Ys_poison = np.zeros((num_iter, len(indices_to_poison)))
         nums_copies = np.zeros((num_iter, len(indices_to_poison)))
 
@@ -206,7 +207,7 @@ def iterative_attack(
         print('*** Iter: %s' % attack_iter)
 
         # Create modified training dataset
-        old_poisoned_X_train = np.copy(model.data_sets.train.x[indices_to_poison, :])
+        old_poisoned_X_train = np.copy(model.train_dataset.x[indices_to_poison, :])
 
         poisoned_X_train_subset = poison_with_influence_proj_gradient_step(
             model,
@@ -224,17 +225,17 @@ def iterative_attack(
             output_root=output_root)
 
         if num_copies is not None:
-            poisoned_X_train = model.data_sets.train.x
+            poisoned_X_train = model.train_dataset.x
             poisoned_X_train[indices_to_poison, :] = poisoned_X_train_subset
             copy_start = indices_to_poison[1] + 1
             poisoned_X_train[copy_start:copy_start+num_copies[0], :] = poisoned_X_train_subset[0, :]
             poisoned_X_train[copy_start+num_copies[0]:copy_start+num_copies[0]+num_copies[1], :] = poisoned_X_train_subset[1, :]
         else:
-            poisoned_X_train = np.copy(model.data_sets.train.x)
+            poisoned_X_train = np.copy(model.train_dataset.x)
             poisoned_X_train[indices_to_poison, :] = poisoned_X_train_subset
 
         # Measure some metrics on what the gradient step did
-        labels = model.data_sets.train.labels
+        labels = model.train_dataset.labels
         dists_sum = 0.0
         poisoned_dists_sum = 0.0
         poisoned_mask = np.array([False] * len(labels), dtype=bool)
@@ -268,7 +269,7 @@ def iterative_attack(
             end_time = time.time()
             times_taken[attack_iter] = end_time - start_time
             Xs_poison[attack_iter, :, :] = np.copy(poisoned_X_train_subset)
-            Ys_poison[attack_iter, :] = model.data_sets.train.labels[indices_to_poison]
+            Ys_poison[attack_iter, :] = model.train_dataset.labels[indices_to_poison]
             nums_copies[attack_iter, :] = num_copies
 
         print('attack_iter', attack_iter)
@@ -283,7 +284,7 @@ def iterative_attack(
                 largest_test_loss = test_loss
                 np.savez(os.path.join(output_root, '%s_attack' % (model.model_name)),
                     poisoned_X_train=poisoned_X_train,
-                    Y_train=model.data_sets.train.labels,
+                    Y_train=model.train_dataset.labels,
                     attack_iter=attack_iter + 1)
 
                 stop_counter = 0

@@ -3,26 +3,29 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import unicode_literals  
 
+import abc
+import sys
+
+import IPython
+
 import numpy as np
+import pandas as pd
+from sklearn import linear_model, preprocessing, cluster
+
+import scipy.linalg as slin
+import scipy.sparse.linalg as sparselin
+import scipy.sparse as sparse
 from scipy.optimize import fmin_ncg
+
 import os.path
 import time
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
-
-# This is for migration purposes. Original code was in tensorflow 1.x
-tf.compat.v1.disable_resource_variables()
-
 from tensorflow.python.ops import array_ops
-from tensorflow.compat.v1.keras import backend as K
+from tensorflow.keras import backend as K
 
 from .hessians import hessian_vector_product
 from .dataset import DataSet
-
-def reset_random_seeds():
-   os.environ['PYTHONHASHSEED']=str(2)
-   tf.random.set_seed(2)
-   np.random.seed(2)
 
 def variable(name, shape, initializer):
     dtype = tf.float32
@@ -67,7 +70,8 @@ class GenericNeuralNet(object):
     """
 
     def __init__(self, **kwargs):
-        reset_random_seeds()
+        np.random.seed(0)
+        tf.compat.v1.set_random_seed(0)
         
         self.batch_size = kwargs.pop('batch_size')
         self.train_dataset = kwargs.pop('train_dataset')
@@ -131,7 +135,6 @@ class GenericNeuralNet(object):
 
         # Setup gradients and Hessians
         self.params = self.get_all_params()
-        
         self.grad_total_loss_op = tf.gradients(ys=self.total_loss, xs=self.params)
         self.grad_loss_no_reg_op = tf.gradients(ys=self.loss_no_reg, xs=self.params)
         self.v_placeholder = [tf.compat.v1.placeholder(tf.float32, shape=a.get_shape()) for a in self.params]
@@ -612,4 +615,4 @@ class GenericNeuralNet(object):
         self.train_dataset = new_train
         self.all_train_feed_dict = self.fill_feed_dict_with_all_ex(self.train_dataset)                
         self.num_train_examples = len(new_train_y)
-        self.reset_datasets()     
+        self.reset_datasets()        
