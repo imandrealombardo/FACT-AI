@@ -11,7 +11,7 @@ import cvxpy as cvx
 ### Minimizer / CVX
 
 def cvx_dot(a,b):
-    return cvx.sum_entries(cvx.mul_elemwise(a, b))
+    return cvx.sum(cvx.multiply(a, b))
 
 class Minimizer(object):
 
@@ -72,20 +72,20 @@ class Minimizer(object):
                         self.constraints.append(self.cvx_env[active] >= self.cvx_x[active] * (2*k-1) - k*(k-1))
                 self.constraints.append(
                     (
-                        cvx.sum_entries(self.cvx_env)
+                        cvx.sum(self.cvx_env)
                         - 2 * cvx_dot(self.cvx_centroid, self.cvx_x)
                         + cvx.sum_squares(self.cvx_centroid)
                     )
-                    < (self.cvx_sphere_radius ** 2)
+                    <=(self.cvx_sphere_radius ** 2)
                 )
             else:
-                self.constraints.append(cvx.pnorm(self.cvx_x_c, 2) ** 2 < self.cvx_sphere_radius ** 2)
+                self.constraints.append(cvx.pnorm(self.cvx_x_c, 2) ** 2 <=self.cvx_sphere_radius ** 2)
 
         if use_slab:
             self.cvx_centroid_vec = cvx.Parameter(eff_d)
             self.cvx_slab_radius = cvx.Parameter(1)
-            self.constraints.append(cvx_dot(self.cvx_centroid_vec, self.cvx_x_c) < self.cvx_slab_radius)
-            self.constraints.append(-cvx_dot(self.cvx_centroid_vec, self.cvx_x_c) < self.cvx_slab_radius)
+            self.constraints.append(cvx_dot(self.cvx_centroid_vec, self.cvx_x_c) <= self.cvx_slab_radius)
+            self.constraints.append(-cvx_dot(self.cvx_centroid_vec, self.cvx_x_c) <= self.cvx_slab_radius)
 
         if non_negative:
             self.constraints.append(self.cvx_x >= 0)
@@ -100,7 +100,7 @@ class Minimizer(object):
             self.constraints.append(
                 1 - self.cvx_y * (
                     cvx_dot(self.cvx_constraint_w, self.cvx_x) + self.cvx_constraint_b
-                ) < self.cvx_max_loss)
+                ) <= 1e-3 + self.cvx_max_loss)
 
 
         self.prob = cvx.Problem(self.objective, self.constraints)
@@ -143,8 +143,8 @@ class Minimizer(object):
         if self.goal == 'maximize_test_loss':
             self.cvx_y.value = y
 
-        self.cvx_sphere_radius.value = sphere_radius
-        self.cvx_slab_radius.value = slab_radius
+        self.cvx_sphere_radius.value = np.array([sphere_radius])
+        self.cvx_slab_radius.value = np.array([slab_radius])
 
         if self.constrain_max_loss:
             self.cvx_max_loss.value = max_loss
