@@ -15,10 +15,8 @@ import datasets
 import iterative_attack
 from influence.influence.smooth_hinge import SmoothHinge
 from influence.influence.dataset import DataSet
-from tensorflow.contrib.learn.python.learn.datasets import base
 
 import tensorflow as tf
-
 
 def get_projection_fn_for_dataset(dataset_name, X, Y, use_slab, use_LP, percentile):
     if dataset_name in ['enron', 'imdb', 'german', 'compas', 'drug']:
@@ -193,7 +191,6 @@ if use_train:
 class_map, centroids, centroid_vec, sphere_radii, slab_radii = data.get_data_params(
     X_train, Y_train, percentile=percentile)
 
-
 feasible_flipped_mask = iterative_attack.get_feasible_flipped_mask(
     X_train, Y_train,
     centroids,
@@ -212,13 +209,12 @@ X_modified, Y_modified, indices_to_poison, copy_array, advantaged = iterative_at
     attack_method,
     use_copy=use_copy)
 
-tf.reset_default_graph()
+tf.compat.v1.reset_default_graph()
 
 input_dim = X_train.shape[1]
 train = DataSet(X_train, Y_train)
 validation = None
 test = DataSet(X_test, Y_test)
-data_sets = base.Datasets(train=train, validation=validation, test=test)
 
 model = SmoothHinge(
     positive_sensitive_el=positive_sensitive_el,
@@ -230,7 +226,9 @@ model = SmoothHinge(
     use_bias=True,
     num_classes=num_classes,
     batch_size=batch_size,
-    data_sets=data_sets,
+    train_dataset=train,
+    validation_dataset=validation,
+    test_dataset=test,
     initial_learning_rate=initial_learning_rate,
     decay_epochs=None,
     mini_batch=False,
@@ -256,8 +254,8 @@ num_em_iters = max(max_em_iter, 1)
 for em_iter in range(num_em_iters):
 
     print('\n\n##### EM iter %s #####' % em_iter)
-    X_modified = model.data_sets.train.x
-    Y_modified = model.data_sets.train.labels
+    X_modified = model.train_dataset.x
+    Y_modified = model.train_dataset.labels
 
     if max_em_iter == 0:
         projection_fn = get_projection_fn_for_dataset(

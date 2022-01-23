@@ -137,7 +137,11 @@ def get_projection_fn(
 
                 centroid = centroids[class_idx, :]
                 sphere_radius = sphere_radii[class_idx]
+                # print("Full radii: ", sphere_radii)
+                # print("---------------------------")
+                # print("Chosen radius: ", sphere_radius, " with shape: ", sphere_radius.shape)
                 slab_radius = slab_radii[class_idx]
+
                 proj_X[idx, :] = projector.minimize_over_feasible_set(
                     None,
                     x,
