@@ -70,6 +70,7 @@ parser.add_argument('--use_slab', action='store_true')
 parser.add_argument('--dataset', default='german')
 parser.add_argument('--percentile', default=90)
 parser.add_argument('--epsilon', default=0.03)
+parser.add_argument('--lamb', default=1.)
 parser.add_argument('--step_size', default=0.1)
 parser.add_argument('--use_train', action="store_true")
 # means no LP, no copy, and no smooth
@@ -97,8 +98,10 @@ baseline_smooth = args.baseline_smooth
 no_LP = args.no_LP
 timed = args.timed
 attack_method = args.method
+print('ATTACK METHOD', attack_method)
 sensitive_idx = int(args.sensitive_feature_idx)
 sensitive_file = args.sensitive_attr_filename
+lamb = float(args.lamb)
 
 output_root = os.path.join(datasets.OUTPUT_FOLDER,
                            dataset_name, 'influence_data')
@@ -106,6 +109,9 @@ datasets.safe_makedirs(output_root)
 
 if(attack_method == "IAF"):
     loss_type = 'adversarial_loss'
+elif(attack_method == "Koh"):
+    loss_type = 'adversarial_loss'
+    lamb = 1
 else:
     loss_type = 'normal_loss'
 
@@ -233,7 +239,8 @@ model = SmoothHinge(
     model_name=model_name,
     method=attack_method,
     general_train_idx=general_train_idx,
-    sensitive_file=sensitive_file)
+    sensitive_file=sensitive_file,
+    lamb=lamb)
 
 
 model.update_train_x_y(X_modified, Y_modified)

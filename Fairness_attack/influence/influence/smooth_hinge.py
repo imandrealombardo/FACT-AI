@@ -233,10 +233,9 @@ class SmoothHinge(GenericNeuralNet):
         return total_loss, loss_no_reg, indiv_loss_no_reg
         
  
-    def hard_adv_loss(self, logits, labels,X_train):
+    def hard_adv_loss(self, logits, labels, X_train, lamb=1):
         x_sensitive = X_train[:,self.sensitive_feature_idx]
         z_i_z_bar = x_sensitive - tf.reduce_mean(x_sensitive)
-        cov_thresh = np.abs(0.)
         sens_logits = tf.matmul(
                     X_train,
                     tf.reshape(self.weights[0:self.input_dim], [-1, 1]))
@@ -247,7 +246,7 @@ class SmoothHinge(GenericNeuralNet):
 
         indiv_adversarial_loss1 = smooth_hinge_loss(self.margin, self.temp)
         indiv_adversarial_loss = indiv_adversarial_loss1+prod
-        adversarial_loss = tf.reduce_mean(indiv_adversarial_loss1) + tf.abs(tf.reduce_mean(prod))
+        adversarial_loss = tf.reduce_mean(indiv_adversarial_loss1) + lamb*tf.abs(tf.reduce_mean(prod))
         return adversarial_loss, indiv_adversarial_loss 
 
     def adversarial_loss(self, logits, labels,X_train):

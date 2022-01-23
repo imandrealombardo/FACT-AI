@@ -3,20 +3,9 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import unicode_literals  
 
-import abc
-import sys
-
-import IPython
 
 import numpy as np
-import pandas as pd
-from sklearn import linear_model, preprocessing, cluster
-
-import scipy.linalg as slin
-import scipy.sparse.linalg as sparselin
-import scipy.sparse as sparse
 from scipy.optimize import fmin_ncg
-
 import os.path
 import time
 from six.moves import xrange  # pylint: disable=redefined-builtin
@@ -85,7 +74,8 @@ class GenericNeuralNet(object):
         self.attack_method = kwargs.pop('method')
         self.general_train_idx=kwargs.pop('general_train_idx')
         self.sensitive_file=kwargs.pop('sensitive_file')
-        
+        self.lamb = kwargs.pop('lamb')
+       # print('lambda is: ', self.lamb)
         if 'keep_probs' in kwargs: self.keep_probs = kwargs.pop('keep_probs')
         else: self.keep_probs = None
         
@@ -160,7 +150,10 @@ class GenericNeuralNet(object):
         self.vec_to_list = self.get_vec_to_list_fn()
 
         if(self.attack_method == "IAF"):
-            self.adversarial_loss, self.indiv_adversarial_loss = self.hard_adv_loss(self.logits, self.labels_placeholder,self.input_placeholder)
+            self.adversarial_loss, self.indiv_adversarial_loss = self.hard_adv_loss(self.logits, self.labels_placeholder,self.input_placeholder, lamb=self.lamb)
+        elif(self.attack_method == "Koh"):
+          #  print('Using KOH ATTACK')
+            self.adversarial_loss, self.indiv_adversarial_loss = self.hard_adv_loss(self.logits, self.labels_placeholder,self.input_placeholder, lamb=0)
         else:
             self.adversarial_loss, self.indiv_adversarial_loss = self.adversarial_loss(self.logits, self.labels_placeholder,self.input_placeholder)
         if self.adversarial_loss is not None:
