@@ -56,6 +56,7 @@ print(np.unique(group_label))
 
 # Split to data points and ground truths
 X = data.iloc[:, :-1].values
+
 Y = data.iloc[:, -1].values
 #unique = set(Y)
 #print(list(unique))
