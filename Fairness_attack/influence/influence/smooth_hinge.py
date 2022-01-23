@@ -242,14 +242,14 @@ class SmoothHinge(GenericNeuralNet):
                     tf.reshape(self.weights[0:self.input_dim], [-1, 1]))
         prod = tf.reduce_mean( input_tensor=tf.multiply(tf.cast(z_i_z_bar, tf.float32), tf.reshape(sens_logits, [-1])),axis=0)
         self.margin = tf.multiply(
-            tf.cast(labels, tf.float32), 
+            tf.cast(labels, tf.float32),
             tf.reshape(logits, [-1]))        
 
         indiv_adversarial_loss1 = smooth_hinge_loss(self.margin, self.temp)
-        indiv_adversarial_loss = indiv_adversarial_loss1+prod
+        indiv_adversarial_loss = indiv_adversarial_loss1 + lamb*prod
         adversarial_loss = tf.reduce_mean(indiv_adversarial_loss1) + lamb*tf.abs(tf.reduce_mean(prod))
 
-        return adversarial_loss, indiv_adversarial_loss 
+        return adversarial_loss, indiv_adversarial_loss
 
     def adversarial_loss(self, logits, labels,X_train):
         wrong_labels = (labels - 1) * -1 # Flips 0s and 1s
