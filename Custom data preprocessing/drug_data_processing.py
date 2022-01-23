@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
+import sklearn.preprocessing as sk
 
 # http://archive.ics.uci.edu/ml/datasets/Drug+consumption+%28quantified%29#
 
@@ -30,7 +31,7 @@ data[20] = data[20].map({'CL0':0, 'CL1':0, 'CL2':1, 'CL3':1, 'CL4':1, 'CL5':1})
 
 # Handle NaN values in data[20] removing rows
 # It should remove 19 rows
-data.dropna(subset = [20], inplace=True)
+data.dropna(inplace=True)
 #data[20] = data[20].fillna(data[20].median())
 
 # Convert to int
@@ -59,13 +60,16 @@ Y = data.iloc[:, -1].values
 #unique = set(Y)
 #print(list(unique))
 
-print(f'\n{X.shape}\n')
+scaler = sk.StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+print(f'\n{X_scaled.shape}\n')
 print(f'\n{Y.shape}\n')
 
 # Split 80/20
-idx = round(0.8*len(X))
-X_train = X[:idx]
-X_test = X[idx:]
+idx = round(0.8*len(X_scaled))
+X_train = X_scaled[:idx]
+X_test = X_scaled[idx:]
 Y_train = Y[:idx]
 Y_test = Y[idx:]
 print(f'X_train: {X_train}, shape: {X_train.shape}\n')

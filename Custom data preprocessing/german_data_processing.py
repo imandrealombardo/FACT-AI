@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
+import sklearn.preprocessing as sk
 
 # http://archive.ics.uci.edu/ml/datasets/Statlog+%28German+Credit+Data%29 
 
@@ -44,29 +45,26 @@ group_label = data[8].to_numpy()
 print(f'group_label shape: {group_label.shape}\n')
 print(f'group_label: {group_label}\n')
 
-# Standardize
-data_normalized=(data-data.mean())/data.std()
-print(f'{data_normalized}\n')
-# Save label column
-data_normalized[20] = data[20]
-
 # Move label column to last column
-label = data_normalized.pop(20)
-data_normalized = pd.concat([data_normalized, label], 1)
+label = data.pop(20)
+data = pd.concat([data, label], 1)
 
-print(data_normalized)
+print(data)
 
 # Split to data points and ground truths
-X = data_normalized.iloc[:, :-1].values
-Y = data_normalized.iloc[:, -1].values
+X = data.iloc[:, :-1].values
+Y = data.iloc[:, -1].values
 
-print(f'\n{X.shape}\n')
+scaler = sk.StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+print(f'\n{X_scaled.shape}\n')
 print(f'\n{Y.shape}\n')
 
 # Split 80/20
-idx = round(0.8*len(X))
-X_train = X[:idx]
-X_test = X[idx:]
+idx = round(0.8*len(X_scaled))
+X_train = X_scaled[:idx]
+X_test = X_scaled[idx:]
 Y_train = Y[:idx]
 Y_test = Y[idx:]
 print(f'X_train: {X_train}, shape: {X_train.shape}\n')
