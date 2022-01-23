@@ -85,7 +85,19 @@ def get_projection_fn(
     less_than_one=False,
     use_lp_rounding=False,
     percentile=90):
-    print(X_clean)
+
+    # ======================================== TO BE REMOVED ==========================================
+    # np.set_printoptions(threshold=np.inf, linewidth=np.inf)  # turn off summarization, line-wrapping
+    # with open('dataset_authors.txt', 'w') as f:
+    #     f.write(np.array2string(X_clean, separator=', '))
+
+    # for i in range(58):
+    #     print(f'Unique values of column {i}: {np.unique(X_clean.T[i])}\n')
+
+    # ===============================================================================================
+        
+    
+
     goal = 'find_nearest_point'
     class_map, centroids, centroid_vec, sphere_radii, slab_radii = get_data_params(X_clean, Y_clean, percentile)
     if use_lp_rounding or non_negative or less_than_one or (sphere and slab):
