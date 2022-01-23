@@ -109,7 +109,7 @@ if(attack_method == "IAF"):
     loss_type = 'adversarial_loss'
 elif(attack_method == "Koh"):
     loss_type = 'adversarial_loss'
-    lamb = 1
+    lamb = 0
 else:
     loss_type = 'normal_loss'
 
