@@ -7,7 +7,6 @@ import numpy as np
 from sklearn import metrics
 import scipy.sparse as sparse
 
-
 def compute_dists_under_Q(
     X, Y,
     Q,

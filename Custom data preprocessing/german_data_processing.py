@@ -10,18 +10,8 @@ path = 'german/german_final.csv'
 data = pd.read_csv(path, header=None)
 print(data)
 
-# One-hot-encoding of categorical attributes
-# https://stackoverflow.com/questions/37292872/how-can-i-one-hot-encode-in-python
-def encode_and_bind(original_dataframe, feature_to_encode):
-    dummies = pd.get_dummies(original_dataframe[[feature_to_encode]])
-    res = pd.concat([original_dataframe, dummies], axis=1)
-    res = res.drop([feature_to_encode], axis=1)
-    return(res)
-
 attributes_to_encode = [0,2,3,5,6,9,11,13,14,16,18,19]
-
-for attribute in attributes_to_encode:
-    data = encode_and_bind(data, attribute)
+data = pd.get_dummies(data, columns=attributes_to_encode)
 
 
 # Group classes (i.e. [A91, A93, A94] as male (0), [A92, A95] as female (1))
@@ -77,5 +67,8 @@ if not os.path.exists('processed'):
     os.makedirs('processed')
 # Make a .npz file for the training and test datasets
 np.savez_compressed('processed/german_data.npz', X_train=X_train, X_test=X_test, Y_train=Y_train, Y_test=Y_test)
+np.savez_compressed('../Fairness_attack/data/german_data.npz', X_train=X_train, X_test=X_test, Y_train=Y_train, Y_test=Y_test)
+
 # Make a .npz file for the groups
 np.savez_compressed('processed/german_group_label.npz', group_label=group_label)
+np.savez_compressed('../Fairness_attack/german_group_label.npz', group_label=group_label)
