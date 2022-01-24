@@ -77,7 +77,7 @@ parser.add_argument('--baseline', action="store_true")
 parser.add_argument('--baseline_smooth', action="store_true")
 parser.add_argument('--no_LP', action="store_true")
 parser.add_argument('--timed', action="store_true")
-parser.add_argument('--sensitive_feature_idx', default=36)
+parser.add_argument('--sensitive_feature_idx', default=0)
 parser.add_argument('--method', default="IAF")
 parser.add_argument('--sensitive_attr_filename',
                     default='german_group_label.npz')
