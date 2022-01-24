@@ -58,8 +58,8 @@ def load_compas():
 
 def load_drug():
     dataset_path = os.path.join(DATA_FOLDER)
-    print(os.path.join(dataset_path, "drug2_data.npz"))
-    f = np.load(os.path.join(dataset_path, "drug2_data.npz"))
+    print(os.path.join(dataset_path, "drug_data.npz"))
+    f = np.load(os.path.join(dataset_path, "drug_data.npz"))
 
     X_train = f['X_train']
     Y_train = f['Y_train'].reshape(-1)

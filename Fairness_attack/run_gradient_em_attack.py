@@ -53,11 +53,12 @@ parser.add_argument('--lamb', default=1.,
 parser.add_argument('--weight_decay', default=0.09,
                     help="Specify weight decay for regularization")
 parser.add_argument('--step_size', default=0.1)
+
 parser.add_argument('--no_LP', action="store_true",
                     help="Don't use LP rounding")
 parser.add_argument('--timed', action="store_true",
                     help="Activated timed")
-parser.add_argument('--sensitive_feature_idx', default=8,
+parser.add_argument('--sensitive_feature_idx', default=0,
                     help="Sensitive group feature index in data")
 parser.add_argument('--method', default="IAF",
                     help="specify attack method out of 'IAF', 'RAA', 'NRAA', 'Koh' ")
