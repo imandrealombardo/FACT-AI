@@ -109,6 +109,11 @@ use_copy = True  # Copy the poisened points to get the specified amount given by
 use_LP = True  # Use LP rounding
 num_classes = 2  # Only binary classification possible
 
+# Only used in Solans attack
+p_over_m = None
+advantaged_group_selector = None
+disadvantaged_group_selector = None
+
 
 if no_LP:
     assert dataset_name == 'german'
@@ -129,11 +134,6 @@ if timed:
 
 X_train, Y_train, X_test, Y_test = datasets.load_dataset(dataset_name)
 
-total_negative = int(np.round(np.sum(Y_train == -1)))
-total_positive = int(np.round(np.sum(Y_train == 1)))
-print('total positive', total_positive)
-print('total negative', total_negative)
-p_over_m = total_negative / total_positive
 
 general_train_idx = X_train.shape[0]
 
@@ -156,7 +156,7 @@ feasible_flipped_mask = iterative_attack.get_feasible_flipped_mask(
     class_map,
     use_slab=use_slab)
 
-X_modified, Y_modified, indices_to_poison, copy_array, advantaged = iterative_attack.init_gradient_attack_from_mask(
+X_modified, Y_modified, indices_to_poison, copy_array, advantaged, test_gender_labels = iterative_attack.init_gradient_attack_from_mask(
     X_train, Y_train,
     epsilon,
     feasible_flipped_mask,
@@ -167,10 +167,29 @@ X_modified, Y_modified, indices_to_poison, copy_array, advantaged = iterative_at
 
 tf.compat.v1.reset_default_graph()
 
+if attack_method == "Solans":
+
+    disadvantaged = -1 * advantaged
+
+    advantaged_group_selector = np.where(test_gender_labels == advantaged)[0]
+    disadvantaged_group_selector = np.where(
+        test_gender_labels == disadvantaged)[0]
+
+    print("Group selector")
+    print(advantaged_group_selector)
+
+    # print(len(advantaged_group_selector))
+    # print(len(disadvantaged_group_selector))
+
+    p_over_m = len(disadvantaged_group_selector) / \
+        len(advantaged_group_selector)
+
+
 input_dim = X_train.shape[1]
 train = DataSet(X_train, Y_train)
 validation = None
 test = DataSet(X_test, Y_test)
+
 
 model = SmoothHinge(
     sensitive_feature_idx=sensitive_idx,
@@ -178,6 +197,7 @@ model = SmoothHinge(
     temp=temp,
     weight_decay=weight_decay,
     use_bias=True,
+    advantaged=advantaged,
     num_classes=num_classes,
     batch_size=batch_size,
     train_dataset=train,
@@ -193,7 +213,9 @@ model = SmoothHinge(
     general_train_idx=general_train_idx,
     sensitive_file=sensitive_file,
     lamb=lamb,
-    p_over_m=p_over_m)
+    p_over_m=p_over_m,
+    advantaged_group_selector=advantaged_group_selector,
+    disadvantaged_group_selector=disadvantaged_group_selector)
 
 
 model.update_train_x_y(X_modified, Y_modified)

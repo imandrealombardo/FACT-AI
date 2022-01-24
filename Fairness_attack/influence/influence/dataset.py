@@ -33,7 +33,7 @@ class DataSet(object):
         return self._num_examples
 
     def reset_batch(self):
-        self._index_in_epoch = 0        
+        self._index_in_epoch = 0
         self._x_batch = np.copy(self._x)
         self._labels_batch = np.copy(self._labels)
 
@@ -45,15 +45,15 @@ class DataSet(object):
 
         # ====== This is not used. idk if it can be useful in the future ======
         # if self._index_in_epoch > self._num_examples:
-            # # Shuffle the data
-            # perm = np.arange(self._num_examples)
-            # np.random.shuffle(perm)
-            # self._x_batch = self._x_batch[perm, :]
-            # self._labels_batch = self._labels_batch[perm]
+        # # Shuffle the data
+        # perm = np.arange(self._num_examples)
+        # np.random.shuffle(perm)
+        # self._x_batch = self._x_batch[perm, :]
+        # self._labels_batch = self._labels_batch[perm]
 
-            # # Start next epoch
-            # start = 0
-            # self._index_in_epoch = batch_size
+        # # Start next epoch
+        # start = 0
+        # self._index_in_epoch = batch_size
 
         end = self._index_in_epoch
         return self._x_batch[start:end], self._labels_batch[start:end]

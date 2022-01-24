@@ -85,6 +85,9 @@ class GenericNeuralNet(object):
         self.sensitive_file=kwargs.pop('sensitive_file')
         self.lamb = kwargs.pop('lamb')
         self.p_over_m = kwargs.pop('p_over_m')
+        self.advantaged = kwargs.pop('advantaged')
+        self.advantaged_group_selector = kwargs.pop('advantaged_group_selector')
+        self.disadvantaged_group_selector = kwargs.pop('disadvantaged_group_selector')
        # print('lambda is: ', self.lamb)
         if 'keep_probs' in kwargs: self.keep_probs = kwargs.pop('keep_probs')
         else: self.keep_probs = None
@@ -128,6 +131,7 @@ class GenericNeuralNet(object):
         self.train_sgd_op = self.get_train_sgd_op(self.total_loss, self.global_step, self.learning_rate)
         self.accuracy_op = self.get_accuracy_op(self.logits, self.labels_placeholder)        
         self.preds = self.predictions(self.logits)
+
 
         # Setup misc
         self.saver = tf.compat.v1.train.Saver()

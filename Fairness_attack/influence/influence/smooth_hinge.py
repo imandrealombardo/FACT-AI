@@ -90,6 +90,14 @@ class SmoothHinge(GenericNeuralNet):
             tf.int32,
             shape=(None),
             name='labels_placeholder')
+        advantaged_group_placeholder = tf.compat.v1.placeholder(
+            tf.int32,
+            shape=(None),
+            name='advantaged_group_placeholder')
+        disadvantaged_group_placeholder = tf.compat.v1.placeholder(
+            tf.int32,
+            shape=(None),
+            name='disadvantaged_group_placeholder')
         return input_placeholder, labels_placeholder
 
     def inference(self, input):
@@ -231,26 +239,42 @@ class SmoothHinge(GenericNeuralNet):
 
         return total_loss, loss_no_reg, indiv_loss_no_reg
 
-    def hard_adv_loss(self, logits, labels, X_train, lamb=1):
+    def hard_adv_loss(self, logits, labels, X_train, lamb=1,):
 
         if(self.attack_method == 'Solans'):
-            negative_indices = np.where(labels == -1)
-            positive_indices = np.where(labels == 1)
-            print('LABELS: ', labels)
-            print(sess.run(Y, feed_dict={X: [[1, 2], [3, 4]]}))
-            print('POSITIVE INDICES', positive_indices)
-            print('NEGATIVE INDICES', negative_indices)
-            self.margin_negative = tf.multiply(
-                tf.cast(labels[negative_indices], tf.float32),
-                tf.reshape(logits[negative_indices], [-1]))
-            self.margin_positive = tf.multiply(
-                tf.cast(labels[positive_indices], tf.float32),
-                tf.reshape(logits[positive_indices], [-1]))
-            print('POSITIVE INDICES', positive_indices)
-           # indiv_adversarial_loss1 = smooth_hinge_loss(self.margin, self.temp)
-           # indiv_adversarial_loss = indiv_adversarial_loss1
-           # adversarial_loss = tf.reduce_mean(indiv_adversarial_loss1)
 
+            advantaged_group_selector = tf.convert_to_tensor(
+                self.advantaged_group_selector, dtype=np.int32)
+            disadvantaged_group_selector = tf.convert_to_tensor(
+                self.disadvantaged_group_selector, dtype=np.int32)
+
+            logits_advantaged = tf.gather(logits, advantaged_group_selector)
+            logits_disadvantaged = tf.gather(
+                logits, disadvantaged_group_selector)
+
+            labels_advantaged = tf.gather(labels, advantaged_group_selector)
+            labels_disadvantaged = tf.gather(
+                labels, disadvantaged_group_selector)
+
+            x_sensitive = X_train[:, self.sensitive_feature_idx]
+
+            self.margin_adv = tf.multiply(
+                tf.cast(labels_advantaged, tf.float32),
+                tf.reshape(logits_advantaged, [-1]))
+
+            self.margin_disadv = tf.multiply(
+                tf.cast(labels_disadvantaged, tf.float32),
+                tf.reshape(logits_disadvantaged, [-1]))
+
+            indiv_adversarial_loss_adv = smooth_hinge_loss(
+                self.margin_adv, self.temp)
+            indiv_adversarial_loss_disadv = smooth_hinge_loss(
+                self.margin_disadv, self.temp)
+
+            indiv_adversarial_loss = indiv_adversarial_loss_disadv + \
+                self.p_over_m * indiv_adversarial_loss_adv
+            adversarial_loss = tf.reduce_mean(
+                indiv_adversarial_loss_disadv) + self.p_over_m * tf.reduce_mean(indiv_adversarial_loss_adv)
         else:
             x_sensitive = X_train[:, self.sensitive_feature_idx]
             z_i_z_bar = x_sensitive - tf.reduce_mean(x_sensitive)
