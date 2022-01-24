@@ -4,10 +4,10 @@ import os
 import sklearn.preprocessing as sk
 
 """
-Preprocessing of the DRUG consumption dataset
+Preprocessing of the Drug Consumption Dataset
 http://archive.ics.uci.edu/ml/datasets/Drug+consumption+%28quantified%29#
 
-The script preprocesses the DRUG consumption dataset and saves the .npz files in Fairness_attack/data
+The script preprocesses the Drug Consumption Dataset and saves the .npz files in Fairness_attack/data
 """
 
 print("===============================================")
@@ -16,17 +16,17 @@ print("Preprocessing the DRUG Consumption Dataset...\n")
 # Load .csv file
 path = 'drug/drug_consumption.data'
 
-# Choose 
-col_list = ["ID", "age", "gender", "education", "country", "ethnicity", "nscore", "escore", "oscore", "ascore", "cscore", "impulsive", "ss", "coke"]
+# Choose the features as prediction features. We chose the ones provided in the paper (Table 1):
+# ["ID", "age", "gender", "education", "country", "ethnicity", "nscore", "escore", "oscore", "ascore", "cscore", "impulsive", "ss", "coke"]
 data = pd.read_csv(path, header=None, usecols=[0,1,2,3,4,5,6,7,8,9,10,11,12,20])
 
-# Group classes to transform problem in binary classification: "CL0" (Never Used) form class 1 (Non-user)
+# Group classes to transform problem in binary classification: "CL0" (Never Used) forms class 1 (Non-user)
 # All the others ("CL1", "CL2", "CL3", "CL4", "CL5", "CL6") form class 0 (User)
 # (although this may be counterintuitive, a study of the dataset provided by the authors seems to reveal  
 #  that drug users have label 0 and non-users have label 1)
 data[20] = data[20].map({'CL0':1, 'CL1':0, 'CL2':0, 'CL3':0, 'CL4':0, 'CL5':0, 'CL6':0})
 
-# Convert to int
+# Force int type to labels
 data[20] = data[20].astype(int)
 
 # Shuffle Dataset before splitting in training and test set.
