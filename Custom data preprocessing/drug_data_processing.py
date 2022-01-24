@@ -3,13 +3,23 @@ import pandas as pd
 import os
 import sklearn.preprocessing as sk
 
+"""
+Preprocessing of the training 
+
+"""
+
+random_state = 2020
+np.random.state = random_state
+
 # http://archive.ics.uci.edu/ml/datasets/Drug+consumption+%28quantified%29#
 
 # Load .csv file
 path = 'drug/drug_consumption.data'
+
+# Choose 
 col_list = ["ID", "age", "gender", "education", "country", "ethnicity", "nscore", "escore", "oscore", "ascore", "cscore", "impulsive", "ss", "coke"]
 data = pd.read_csv(path, header=None, usecols=[0,1,2,3,4,5,6,7,8,9,10,11,12,20])
-print(data)
+
 print(f'Unique "ID" values: {data[0].unique()}\n')
 print(f'Unique "age" values: {data[1].unique()}\n')
 print(f'Unique "gender" values: {data[2].unique()}\n')
@@ -27,12 +37,7 @@ print(f'Unique "coke" values: {data[20].unique()}\n')
 
 # Group classes to transform problem in binary classification: "CL0" (Never Used) and "CL1" (Used over a Decade Ago) form class 0 (Non-user)
 # All the others ("CL2", "CL3", "CL4", "CL5", "CL6") form class 1 (User)
-data[20] = data[20].map({'CL0':0, 'CL1':0, 'CL2':1, 'CL3':1, 'CL4':1, 'CL5':1})
-
-# Handle NaN values in data[20] removing rows
-# It should remove 19 rows
-data.dropna(inplace=True)
-#data[20] = data[20].fillna(data[20].median())
+data[20] = data[20].map({'CL0':1, 'CL1':0, 'CL2':0, 'CL3':0, 'CL4':0, 'CL5':0, 'CL6':0})
 
 # Convert to int
 data[20] = data[20].astype(int)
@@ -42,9 +47,10 @@ print(data)
 
 # Shuffle Dataset
 #data_shuffled = data.sample(frac=1, random_state=0)
+shuffled = data.sample(frac=1,random_state=2021).reset_index(drop=True)
 
 # Create advantaged and disadvantaged groups
-group_label = data[2].to_numpy()
+group_label = shuffled[2].to_numpy()
 print('Unique Group label values')
 print(np.unique(group_label))
 # Map -0.4826 (Male) to 0
@@ -54,12 +60,14 @@ group_label = np.where(group_label<0,0,1)
 print('Group label\n')
 print(np.unique(group_label))
 
-# Split to data points and ground truths
-X = data.iloc[:, :-1].values
 
-Y = data.iloc[:, -1].values
-#unique = set(Y)
-#print(list(unique))
+# Split to data points and ground truths
+X_unordered = shuffled.iloc[:, :-1].values
+
+sex = X_unordered[:,2]
+X = np.hstack((X_unordered[:,:2], X_unordered[:,3:], sex[..., np.newaxis]))
+
+Y = shuffled.iloc[:, -1].values
 
 scaler = sk.StandardScaler()
 X_scaled = scaler.fit_transform(X)
@@ -68,7 +76,9 @@ print(f'\n{X_scaled.shape}\n')
 print(f'\n{Y.shape}\n')
 
 # Split 80/20
-idx = round(0.8*len(X_scaled))
+idx = 1500
+#idx = round(0.8*len(X_scaled))
+
 X_train = X_scaled[:idx]
 X_test = X_scaled[idx:]
 Y_train = Y[:idx]
@@ -78,10 +88,15 @@ print(f'X_test: {X_test}, shape: {X_test.shape}\n')
 print(f'Y_train: {Y_train}, shape: {Y_train.shape}\n')
 print(f'Y_test: {Y_test}, shape: {Y_test.shape}\n')
 
+for i in range(X_train.shape[1]):
+    print(f'Unique values of column {i}: {np.unique(X_train.T[i])}\n')
+
 # Create output folder if it doesn't exist
 if not os.path.exists('processed'):
     os.makedirs('processed')
 # Make a .npz file for the training and test datasets
 np.savez_compressed('processed/drug_data.npz', X_train=X_train, X_test=X_test, Y_train=Y_train, Y_test=Y_test)
+np.savez_compressed('../Fairness_attack/data/drug_data.npz', X_train=X_train, X_test=X_test, Y_train=Y_train, Y_test=Y_test)
 # Make a .npz file for the groups
 np.savez_compressed('processed/drug_group_label.npz', group_label=group_label)
+np.savez_compressed('../Fairness_attack/data/drug_group_label.npz', group_label=group_label)

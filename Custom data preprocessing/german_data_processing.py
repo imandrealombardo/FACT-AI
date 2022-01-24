@@ -68,3 +68,5 @@ np.savez_compressed('../Fairness_attack/data/german_data.npz', X_train=X_train, 
 # Make a .npz file for the groups
 np.savez_compressed('processed/german_group_label.npz', group_label=group_label)
 np.savez_compressed('../Fairness_attack/german_group_label.npz', group_label=group_label)
+
+
