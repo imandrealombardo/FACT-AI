@@ -127,16 +127,14 @@ if timed:
 
 X_train, Y_train, X_test, Y_test = datasets.load_dataset(dataset_name)
 
-total_negative = int(np.round(np.sum(Y_train == -1) ))
-total_positive = int(np.round(np.sum(Y_train == 1) ))
+total_negative = int(np.round(np.sum(Y_train == -1)))
+total_positive = int(np.round(np.sum(Y_train == 1)))
 print('total positive', total_positive)
 print('total negative', total_negative)
-p_over_m = total_negative/total_positive
+p_over_m = total_negative / total_positive
 
 general_train_idx = X_train.shape[0]
-unique_sensitives = np.sort(np.unique(X_train[:, sensitive_idx]))
-positive_sensitive_el = np.float32(unique_sensitives[1])
-negative_sensitive_el = np.float32(unique_sensitives[0])
+
 
 if sparse.issparse(X_train):
     X_train = X_train.toarray()
@@ -173,8 +171,6 @@ validation = None
 test = DataSet(X_test, Y_test)
 
 model = SmoothHinge(
-    positive_sensitive_el=positive_sensitive_el,
-    negative_sensitive_el=negative_sensitive_el,
     sensitive_feature_idx=sensitive_idx,
     input_dim=input_dim,
     temp=temp,
