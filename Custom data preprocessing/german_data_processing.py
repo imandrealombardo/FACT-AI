@@ -13,8 +13,6 @@ The script preprocesses the German Credit Dataset and saves the .npz files in Fa
 print("===============================================")
 print("Preprocessing the German Credit Dataset...\n")
 
-# 
-
 # Load .csv file
 path = 'german/german_final.csv'
 data = pd.read_csv(path, header=None)
