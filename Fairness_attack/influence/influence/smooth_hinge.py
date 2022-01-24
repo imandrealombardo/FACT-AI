@@ -51,6 +51,8 @@ class SmoothHinge(GenericNeuralNet):
         self.positive_sensitive_el =positive_sensitive_el
         self.negative_sensitive_el =negative_sensitive_el
 
+
+
         super(SmoothHinge, self).__init__(**kwargs)
 
         C = 1.0 / (self.num_train_examples * self.weight_decay)        
@@ -234,20 +236,39 @@ class SmoothHinge(GenericNeuralNet):
         
  
     def hard_adv_loss(self, logits, labels, X_train, lamb=1):
-        x_sensitive = X_train[:,self.sensitive_feature_idx]
-        z_i_z_bar = x_sensitive - tf.reduce_mean(x_sensitive)
 
-        sens_logits = tf.matmul(
-                    X_train,
-                    tf.reshape(self.weights[0:self.input_dim], [-1, 1]))
-        prod = tf.reduce_mean( input_tensor=tf.multiply(tf.cast(z_i_z_bar, tf.float32), tf.reshape(sens_logits, [-1])),axis=0)
-        self.margin = tf.multiply(
-            tf.cast(labels, tf.float32),
-            tf.reshape(logits, [-1]))        
+        if(self.attack_method == 'Solans'):
+            negative_indices = np.where(labels==-1)
+            positive_indices = np.where(labels==1)
+            print('LABELS: ', labels)
+            print(sess.run(Y, feed_dict={X: [[1, 2], [3, 4]]}))
+            print('POSITIVE INDICES', positive_indices)
+            print('NEGATIVE INDICES', negative_indices)
+            self.margin_negative = tf.multiply(
+                tf.cast(labels[negative_indices], tf.float32),
+                tf.reshape(logits[negative_indices], [-1]))
+            self.margin_positive = tf.multiply(
+                tf.cast(labels[positive_indices], tf.float32),
+                tf.reshape(logits[positive_indices], [-1]))
+            print('POSITIVE INDICES', positive_indices)
+           # indiv_adversarial_loss1 = smooth_hinge_loss(self.margin, self.temp)
+           # indiv_adversarial_loss = indiv_adversarial_loss1
+           # adversarial_loss = tf.reduce_mean(indiv_adversarial_loss1)
 
-        indiv_adversarial_loss1 = smooth_hinge_loss(self.margin, self.temp)
-        indiv_adversarial_loss = indiv_adversarial_loss1 + lamb*prod
-        adversarial_loss = tf.reduce_mean(indiv_adversarial_loss1) + lamb*tf.abs(tf.reduce_mean(prod))
+        else:
+            x_sensitive = X_train[:,self.sensitive_feature_idx]
+            z_i_z_bar = x_sensitive - tf.reduce_mean(x_sensitive)
+            sens_logits = tf.matmul(
+                        X_train,
+                        tf.reshape(self.weights[0:self.input_dim], [-1, 1]))
+            prod = tf.reduce_mean( input_tensor=tf.multiply(tf.cast(z_i_z_bar, tf.float32), tf.reshape(sens_logits, [-1])),axis=0)
+            self.margin = tf.multiply(
+                tf.cast(labels, tf.float32),
+                tf.reshape(logits, [-1]))
+
+            indiv_adversarial_loss1 = smooth_hinge_loss(self.margin, self.temp)
+            indiv_adversarial_loss = indiv_adversarial_loss1 + lamb*prod
+            adversarial_loss = tf.reduce_mean(indiv_adversarial_loss1) + lamb*tf.abs(tf.reduce_mean(prod))
 
         return adversarial_loss, indiv_adversarial_loss
 

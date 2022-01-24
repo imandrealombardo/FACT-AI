@@ -1,0 +1,15 @@
+name: f_attack
+channels:
+  - conda-forge
+  - tensorflow
+  - defaults
+dependencies:
+  - python=3.9
+  - pip=21.3.1
+  - pip:
+    - scikit-learn==0.24.2
+    - tensorflow==2.6.2
+    - cvxpy==1.1.18
+    - Pandas==1.1.5
+    - scipy==1.5.4
+    - Matplotlib==3.3.4

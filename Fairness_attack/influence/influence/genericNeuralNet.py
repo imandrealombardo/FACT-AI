@@ -84,6 +84,7 @@ class GenericNeuralNet(object):
         self.general_train_idx=kwargs.pop('general_train_idx')
         self.sensitive_file=kwargs.pop('sensitive_file')
         self.lamb = kwargs.pop('lamb')
+        self.p_over_m = kwargs.pop('p_over_m')
        # print('lambda is: ', self.lamb)
         if 'keep_probs' in kwargs: self.keep_probs = kwargs.pop('keep_probs')
         else: self.keep_probs = None
@@ -159,10 +160,9 @@ class GenericNeuralNet(object):
 
         self.vec_to_list = self.get_vec_to_list_fn()
 
-        if(self.attack_method == "IAF"):
+        if(self.attack_method == "IAF" or self.attack_method == "Solans"):
             self.adversarial_loss, self.indiv_adversarial_loss = self.hard_adv_loss(self.logits, self.labels_placeholder,self.input_placeholder, lamb=self.lamb)
         elif(self.attack_method == "Koh"):
-          #  print('Using KOH ATTACK')
             self.adversarial_loss, self.indiv_adversarial_loss = self.hard_adv_loss(self.logits, self.labels_placeholder,self.input_placeholder, lamb=0)
         else:
             self.adversarial_loss, self.indiv_adversarial_loss = self.adversarial_loss(self.logits, self.labels_placeholder,self.input_placeholder)
@@ -515,9 +515,11 @@ class GenericNeuralNet(object):
     def get_test_grad_loss_no_reg_val(self, test_indices, batch_size=100, loss_type='normal_loss'):
 
         if loss_type == 'normal_loss':
+            print('NORMAL LOSS')
             op = self.grad_loss_no_reg_op
         elif loss_type == 'adversarial_loss':
             op = self.grad_adversarial_loss_op
+            print('ADVERSARIAL LOSS')
         # else:
         #     raise ValueError, 'Loss must be specified'
 

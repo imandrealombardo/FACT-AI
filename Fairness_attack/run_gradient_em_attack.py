@@ -127,6 +127,12 @@ if timed:
 
 X_train, Y_train, X_test, Y_test = datasets.load_dataset(dataset_name)
 
+total_negative = int(np.round(np.sum(Y_train == -1) ))
+total_positive = int(np.round(np.sum(Y_train == 1) ))
+print('total positive', total_positive)
+print('total negative', total_negative)
+p_over_m = total_negative/total_positive
+
 general_train_idx = X_train.shape[0]
 unique_sensitives = np.sort(np.unique(X_train[:, sensitive_idx]))
 positive_sensitive_el = np.float32(unique_sensitives[1])
@@ -188,7 +194,8 @@ model = SmoothHinge(
     method=attack_method,
     general_train_idx=general_train_idx,
     sensitive_file=sensitive_file,
-    lamb=lamb)
+    lamb=lamb,
+    p_over_m=p_over_m)
 
 
 model.update_train_x_y(X_modified, Y_modified)
