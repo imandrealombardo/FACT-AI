@@ -1,2 +1,0 @@
-model_checkpoint_path: "smooth_hinge_drug_sphere-True_slab-True_start-copy_lflip-True_step-0.1_t-0.001_eps-0.2_wd-0.09_rs-1-checkpoint-0"
-all_model_checkpoint_paths: "smooth_hinge_drug_sphere-True_slab-True_start-copy_lflip-True_step-0.1_t-0.001_eps-0.2_wd-0.09_rs-1-checkpoint-0"

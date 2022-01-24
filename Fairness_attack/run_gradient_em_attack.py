@@ -38,6 +38,7 @@ initial_learning_rate = 0.001
 
 
 parser = argparse.ArgumentParser()
+
 parser.add_argument('--total_grad_iter', default=300,
                     help="Maximum number of attack gradient iterations for the attack")
 parser.add_argument('--use_slab', action='store_true',

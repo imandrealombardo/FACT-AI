@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
+import sklearn.preprocessing as sk
 
 """
 Preprocessing of the COMPAS Dataset
@@ -32,23 +33,21 @@ group_label = data["sex"].to_numpy()
 # (Here, differently from the other datasets, there's no need to move the sensitive features 
 #  as it is already positioned at index 0)
 
-# Standardize
-data_normalized=(data-data.mean())/data.std()
-
-# Save label column
-data_normalized["two_year_recid"] = data["two_year_recid"]
-
 # Split to data points and ground truths
-X = data_normalized.iloc[:, :-1].values
-Y = data_normalized.iloc[:, -1].values
+X = data.iloc[:, :-1].values
+Y = data.iloc[:, -1].values
 
-print(f'\n{X.shape}\n')
-print(f'\n{Y.shape}\n')
+# Standardize data column-wise
+scaler = sk.StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+print(f'Shape of the datapoints:           {X_scaled.shape}')
+print(f'Shape of the corresponding labels: {Y.shape}\n')
 
 # Split 80/20
-idx = round(0.8*len(X))
-X_train = X[:idx]
-X_test = X[idx:]
+idx = round(0.8*len(X_scaled))
+X_train = X_scaled[:idx]
+X_test = X_scaled[idx:]
 Y_train = Y[:idx]
 Y_test = Y[idx:]
 print(f'X_train shape: {X_train.shape}\n')

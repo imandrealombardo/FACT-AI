@@ -48,8 +48,8 @@ Y = data.iloc[:, -1].values
 scaler = sk.StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-print(f'\n{X_scaled.shape}\n')
-print(f'\n{Y.shape}\n')
+print(f'Shape of the datapoints:           {X_scaled.shape}')
+print(f'Shape of the corresponding labels: {Y.shape}\n')
 
 # Split 80/20
 idx = round(0.8*len(X_scaled))
