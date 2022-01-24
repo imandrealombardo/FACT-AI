@@ -29,11 +29,11 @@ data.dropna(inplace=True)
 print('Mapped Dataset:\n')
 print(data)
 
-# Shuffle Dataset
-#data_shuffled = data.sample(frac=1, random_state=0)
-
 # Create advantaged and disadvantaged groups
 group_label = data["sex"].to_numpy()
+
+# (Here, differently from the other datasets, there's no need to move the sensitive features 
+#  as it is already positioned at index 0)
 
 # Standardize
 data_normalized=(data-data.mean())/data.std()
@@ -60,9 +60,9 @@ print(f'Y_train: {Y_train}, shape: {Y_train.shape}\n')
 print(f'Y_test: {Y_test}, shape: {Y_test.shape}\n')
 
 # Create output folder if it doesn't exist
-if not os.path.exists('processed'):
-    os.makedirs('processed')
+if not os.path.exists('../Fairness_attack/data'):
+    os.makedirs('../Fairness_attack/data')
 # Make a .npz file for the training and test datasets
-np.savez_compressed('processed/compas_data.npz', X_train=X_train, X_test=X_test, Y_train=Y_train, Y_test=Y_test)
+np.savez_compressed('../Fairness_attack/data/compas_data.npz', X_train=X_train, X_test=X_test, Y_train=Y_train, Y_test=Y_test)
 # Make a .npz file for the groups
-np.savez_compressed('processed/compas_group_label.npz', group_label=group_label)
+np.savez_compressed('../Fairness_attack/data/compas_group_label.npz', group_label=group_label)

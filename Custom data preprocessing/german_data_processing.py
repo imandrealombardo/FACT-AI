@@ -60,14 +60,11 @@ print(f'Y_train: {Y_train}, shape: {Y_train.shape}\n')
 print(f'Y_test: {Y_test}, shape: {Y_test.shape}\n')
 
 # Create output folder if it doesn't exist
-if not os.path.exists('processed'):
-    os.makedirs('processed')
+if not os.path.exists('../Fairness_attack/data'):
+    os.makedirs('../Fairness_attack/data')
 # Make a .npz file for the training and test datasets
-np.savez_compressed('processed/german_data.npz', X_train=X_train, X_test=X_test, Y_train=Y_train, Y_test=Y_test)
 np.savez_compressed('../Fairness_attack/data/german_data.npz', X_train=X_train, X_test=X_test, Y_train=Y_train, Y_test=Y_test)
-
 # Make a .npz file for the groups
-np.savez_compressed('processed/german_group_label.npz', group_label=group_label)
 np.savez_compressed('../Fairness_attack/german_group_label.npz', group_label=group_label)
 
 
