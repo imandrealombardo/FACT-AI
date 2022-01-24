@@ -10,6 +10,9 @@ http://archive.ics.uci.edu/ml/datasets/Drug+consumption+%28quantified%29#
 The script preprocesses the DRUG consumption dataset and saves the .npz files in Fairness_attack/data
 """
 
+print("===============================================")
+print("Preprocessing the DRUG Consumption Dataset...\n")
+
 # Load .csv file
 path = 'drug/drug_consumption.data'
 
@@ -42,7 +45,7 @@ X_unordered = shuffled.iloc[:, :-1].values
 
 # Move the sensitive feature to index 0 so that it is selected by default
 sensitive_feature = X_unordered[:,2] # (gender)
-X = np.hstack((sensitive_feature[..., np.newaxis]), X_unordered[:,:2], X_unordered[:,3:])
+X = np.hstack((sensitive_feature[..., np.newaxis], X_unordered[:,:2], X_unordered[:,3:]))
 Y = shuffled.iloc[:, -1].values
 
 # Standardize data column-wise
@@ -64,10 +67,10 @@ X_train = X_scaled[:idx]
 X_test = X_scaled[idx:]
 Y_train = Y[:idx]
 Y_test = Y[idx:]
-print(f'X_train shape: {X_train.shape}\n')
-print(f'X_test shape: {X_test.shape}\n')
-print(f'Y_train shape: {Y_train.shape}\n')
-print(f'Y_test shape: {Y_test.shape}\n')
+print(f'X_train shape: {X_train.shape}')
+print(f'X_test shape:  {X_test.shape}')
+print(f'Y_train shape: {Y_train.shape}')
+print(f'Y_test shape:  {Y_test.shape}')
 
 # Create output folder if it doesn't exist
 if not os.path.exists('processed'):
@@ -76,3 +79,5 @@ if not os.path.exists('processed'):
 np.savez_compressed('../Fairness_attack/data/drug_data.npz', X_train=X_train, X_test=X_test, Y_train=Y_train, Y_test=Y_test)
 # Make a .npz file for the group labels
 np.savez_compressed('../Fairness_attack/data/drug_group_label.npz', group_label=group_label)
+
+print("===============================================")

@@ -25,9 +25,6 @@ print(data)
 # Check NaN rows and drop them
 data.dropna(inplace=True)
 
-# Shuffle Dataset
-#data_shuffled = data.sample(frac=1, random_state=0)
-
 # Create advantaged and disadvantaged groups: if it's a male (1) map to 0, if it's a female (2) map to 1
 group_label = data[8].to_numpy()
 print(f'group_label shape: {group_label.shape}\n')
@@ -38,7 +35,11 @@ label = data.pop(20)
 data = pd.concat([data, label], 1)
 
 # Split to data points and ground truths
-X = data.iloc[:, :-1].values
+X_unordered = data.iloc[:, :-1].values
+
+# Move the sensitive feature to index 0 so that it is selected by default
+sensitive_feature = X_unordered[:,3] # (gender)
+X = np.hstack((sensitive_feature[..., np.newaxis], X_unordered[:,:3], X_unordered[:,4:]))
 Y = data.iloc[:, -1].values
 
 scaler = sk.StandardScaler()
