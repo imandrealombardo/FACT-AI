@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
+
 """
 Preprocessing of the COMPAS Dataset
 https://github.com/propublica/compas-analysis/blob/master/compas-scores-two-years.csv
