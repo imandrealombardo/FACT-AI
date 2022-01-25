@@ -85,7 +85,8 @@ class GenericNeuralNet(object):
         self.sensitive_file=kwargs.pop('sensitive_file')
         self.lamb = kwargs.pop('lamb')
         self.p_over_m = kwargs.pop('p_over_m')
-       # print('lambda is: ', self.lamb)
+        self.eval_mode = kwargs.pop('eval_mode')
+        self.attack_iter = None
         if 'keep_probs' in kwargs: self.keep_probs = kwargs.pop('keep_probs')
         else: self.keep_probs = None
         
@@ -152,6 +153,7 @@ class GenericNeuralNet(object):
     
         self.checkpoint_file = os.path.join(self.train_dir, "%s-checkpoint" % self.model_name)
 
+
         self.all_train_feed_dict = self.fill_feed_dict_with_all_ex(self.train_dataset)
         self.all_test_feed_dict = self.fill_feed_dict_with_all_ex(self.test_dataset)
 
@@ -217,8 +219,13 @@ class GenericNeuralNet(object):
         d_female_test = (test_female_zero_prediction.shape[0]/poi_test_hat_zero.shape[0])*poi_test_y_zero_hat_zero
         d_male_test = (test_male_zero_prediction.shape[0]/poi_test_hat_zero.shape[0])*poi_test_y_zero_hat_zero
 
-
         print("******************Poison model EO bias on Test" + str ( abs( (a_female_test/(a_female_test+b_female_test)) - (a_male_test/(a_male_test+b_male_test)) )) )
+
+        if (self.eval_mode == True):
+            Parity = abs( (test_female_one_prediction.shape[0]/index_female_test.shape[0]) - (test_male_one_prediction.shape[0]/index_male_test.shape[0])  )
+            E0 = abs( (a_female_test/(a_female_test+b_female_test)) - (a_male_test/(a_male_test+b_male_test)) )
+            return Parity, E0
+
     def get_vec_to_list_fn(self):
         params_val = self.sess.run(self.params)
         self.num_params = len(np.concatenate(params_val))        
@@ -342,8 +349,11 @@ class GenericNeuralNet(object):
         print('Train acc on all data:  %s' % train_acc_val)
         print('Test acc on all data:   %s' % test_acc_val)
 
-        self.get_fairness_measures(test_predictions,train_predictions)
-
+        if(self.eval_mode==True):
+            Parity, E0 = self.get_fairness_measures(test_predictions,train_predictions)
+        else:
+            self.get_fairness_measures(test_predictions, train_predictions)
+            Parity, E0 = None, None
         grad_norm = np.linalg.norm(np.concatenate(grad_loss_val))
         params_norm = np.linalg.norm(np.concatenate(params_val))
         print('Norm of the mean of gradients: %s' % grad_norm)
@@ -356,19 +366,25 @@ class GenericNeuralNet(object):
             'train_acc': train_acc_val,
             'test_acc': test_acc_val,
             'grad_norm': grad_norm,
-            'params_norm': params_norm
+            'params_norm': params_norm,
+            'Parity': Parity,
+            'E0': E0
         }
 
         return results
 
     # Not used but might be useful later
-    # def load_checkpoint(self, iter_to_load, do_checks=True):
-    #     checkpoint_to_load = "%s-%s" % (self.checkpoint_file, iter_to_load) 
-    #     self.saver.restore(self.sess, checkpoint_to_load)
+    def load_checkpoint(self, iter_to_load, do_checks=True):
+        checkpoint_to_load = "%s-%s" % (self.checkpoint_file, iter_to_load)
+        self.saver.restore(self.sess, checkpoint_to_load)
 
-    #     if do_checks:
-    #         print('Model %s loaded. Sanity checks ---' % checkpoint_to_load)
-    #         self.print_model_eval()
+        if do_checks:
+            print('Model %s loaded. Sanity checks ---' % checkpoint_to_load)
+            results = self.print_model_eval()
+            print('MODEL LOADED\n')
+            if(self.eval_mode==True):
+                print('RETURNING RESULTS \n ')
+                return results
 
 
     def get_train_op(self, total_loss, global_step, learning_rate):
@@ -542,7 +558,7 @@ class GenericNeuralNet(object):
 
             test_grad_loss_no_reg_val = [a/len(test_indices) for a in test_grad_loss_no_reg_val]
 
-        else:            
+        else:
             test_grad_loss_no_reg_val = self.minibatch_mean_eval([op], self.test_dataset)[0]
             
         return test_grad_loss_no_reg_val

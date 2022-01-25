@@ -205,7 +205,7 @@ def iterative_attack(
     for attack_iter in range(num_iter):
         print(num_iter)
         print('*** Iter: %s' % attack_iter)
-
+        model.attack_iter = attack_iter
         # Create modified training dataset
         old_poisoned_X_train = np.copy(model.train_dataset.x[indices_to_poison, :])
 

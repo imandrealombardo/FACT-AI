@@ -18,219 +18,239 @@ from influence.influence.dataset import DataSet
 
 import tensorflow as tf
 
+def main():
+    def get_projection_fn_for_dataset(X, Y, use_slab, use_LP, percentile):
+        projection_fn = data.get_projection_fn(
+            X, Y,
+            sphere=True,
+            slab=use_slab,
+            non_negative=True,
+            less_than_one=False,
+            use_lp_rounding=use_LP,
+            percentile=percentile)
 
-def get_projection_fn_for_dataset(X, Y, use_slab, use_LP, percentile):
-    projection_fn = data.get_projection_fn(
-        X, Y,
-        sphere=True,
-        slab=use_slab,
-        non_negative=True,
-        less_than_one=False,
-        use_lp_rounding=use_LP,
-        percentile=percentile)
-
-    return projection_fn
-
-
-np.random.seed(1)
-
-initial_learning_rate = 0.001
+        return projection_fn
 
 
-parser = argparse.ArgumentParser()
+    np.random.seed(1)
 
-parser.add_argument('--total_grad_iter', default=300,
-                    help="Maximum number of attack gradient iterations for the attack")
-parser.add_argument('--use_slab', action='store_true',
-                    help="Utilize slab defense --> Anomaly detector=interesection with L2 defense")
-parser.add_argument('--dataset', default='german',
-                    help="Specify dataset file name")
-parser.add_argument('--percentile', default=95,
-                    help="percentage of data to keep in feasible set")
-parser.add_argument('--epsilon', default=0.03,
-                    help="partial of number of datapoints as number of poisened points to create")
-parser.add_argument('--lamb', default=1.,
-                    help="adversarial loss lambda")
-parser.add_argument('--weight_decay', default=0.09,
-                    help="Specify weight decay for regularization")
-parser.add_argument('--step_size', default=0.1)
-
-parser.add_argument('--no_LP', action="store_true",
-                    help="Don't use LP rounding")
-parser.add_argument('--timed', action="store_true",
-                    help="Activated timed")
-parser.add_argument('--sensitive_feature_idx', default=0,
-                    help="Sensitive group feature index in data")
-parser.add_argument('--method', default="IAF",
-                    help="specify attack method out of 'IAF', 'RAA', 'NRAA', 'Koh' ")
-parser.add_argument('--sensitive_attr_filename', help="Specify filename of group label file",
-                    default='german_group_label.npz')
-parser.add_argument('--stop_after', default='2',
-                    help='Specify after how many iterations without improving the attack should stop')
-parser.add_argument('--batch_size', default=100,
-                    help="Specify batch size")
-args = parser.parse_args()
-
-dataset_name = args.dataset
-use_slab = args.use_slab
-epsilon = float(args.epsilon)
-step_size = float(args.step_size)
-percentile = int(np.round(float(args.percentile)))
-total_grad_iter = int(np.round(float(args.total_grad_iter)))
-no_LP = args.no_LP
-timed = args.timed
-attack_method = args.method
-print('ATTACK METHOD', attack_method)
-sensitive_idx = int(args.sensitive_feature_idx)
-sensitive_file = args.sensitive_attr_filename
-lamb = float(args.lamb)
-weight_decay = float(args.weight_decay)
-stop_after = int(args.stop_after)
-batch_size = int(args.batch_size)
-
-output_root = os.path.join(datasets.OUTPUT_FOLDER,
-                           dataset_name, 'influence_data')
-datasets.safe_makedirs(output_root)
-
-if(attack_method == "IAF"):
-    loss_type = 'adversarial_loss'
-elif(attack_method == "Koh"):
-    loss_type = 'adversarial_loss'
-    lamb = 0
-else:
-    loss_type = 'normal_loss'
-
-print('epsilon: %s' % epsilon)
-print('use_slab: %s' % use_slab)
+    initial_learning_rate = 0.001
 
 
-temp = 0.001  # Delta for smooth hinge loss
-use_copy = True  # Copy the poisened points to get the specified amount given by epsilon
-use_LP = True  # Use LP rounding
-num_classes = 2  # Only binary classification possible
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--total_grad_iter', default=300,
+                        help="Maximum number of attack gradient iterations for the attack")
+    parser.add_argument('--use_slab', action='store_true',
+                        help="Utilize slab defense --> Anomaly detector=interesection with L2 defense")
+    parser.add_argument('--dataset', default='german',
+                        help="Specify dataset file name")
+    parser.add_argument('--percentile', default=95,
+                        help="percentage of data to keep in feasible set")
+    parser.add_argument('--epsilon', default=0.03,
+                        help="partial of number of datapoints as number of poisened points to create")
+    parser.add_argument('--lamb', default=1.,
+                        help="adversarial loss lambda")
+    parser.add_argument('--weight_decay', default=0.09,
+                        help="Specify weight decay for regularization")
+    parser.add_argument('--step_size', default=0.1)
+
+    parser.add_argument('--no_LP', action="store_true",
+                        help="Don't use LP rounding")
+    parser.add_argument('--timed', action="store_true",
+                        help="Activated timed")
+    parser.add_argument('--sensitive_feature_idx', default=0,
+                        help="Sensitive group feature index in data")
+    parser.add_argument('--method', default="IAF",
+                        help="specify attack method out of 'IAF', 'RAA', 'NRAA', 'Koh' ")
+    parser.add_argument('--sensitive_attr_filename', help="Specify filename of group label file",
+                        default='german_group_label.npz')
+    parser.add_argument('--stop_after', default='2',
+                        help='Specify after how many iterations without improving the attack should stop')
+    parser.add_argument('--batch_size', default=100,
+                        help="Specify batch size")
+
+    parser.add_argument('--eval_mode', default=False,
+                        help="Evaluation or training mode")
+    parser.add_argument('--iter_to_load', default=None,
+                        help="Number of the interation of the checkpoint to load")
+    parser.add_argument('--stopping_method', default='Accuracy',
+                        help="The metric on which the early stopping is based. Fairness metrics or the test accuracy.")
+    args = parser.parse_args()
+
+    dataset_name = args.dataset
+    use_slab = args.use_slab
+    epsilon = float(args.epsilon)
+    step_size = float(args.step_size)
+    percentile = int(np.round(float(args.percentile)))
+    total_grad_iter = int(np.round(float(args.total_grad_iter)))
+    no_LP = args.no_LP
+    timed = args.timed
+    attack_method = args.method
+    print('ATTACK METHOD', attack_method)
+    sensitive_idx = int(args.sensitive_feature_idx)
+    sensitive_file = args.sensitive_attr_filename
+    lamb = float(args.lamb)
+    weight_decay = float(args.weight_decay)
+    stop_after = int(args.stop_after)
+    batch_size = int(args.batch_size)
+    eval_mode = bool(args.eval_mode)
+    stopping_method = str(args.stopping_method)
+    output_root = os.path.join(datasets.OUTPUT_FOLDER,
+                               dataset_name, 'influence_data')
+    datasets.safe_makedirs(output_root)
+
+    if(attack_method == "IAF"):
+        loss_type = 'adversarial_loss'
+    elif(attack_method == "Koh"):
+        loss_type = 'adversarial_loss'
+        lamb = 0
+    else:
+        loss_type = 'normal_loss'
+
+    print('epsilon: %s' % epsilon)
+    print('use_slab: %s' % use_slab)
 
 
-if no_LP:
-    assert dataset_name == 'german'
-    use_LP = False
-    percentile = 80
-
-model_name = 'smooth_hinge_%s_sphere-True_slab-%s_start-copy_lflip-True_step-%s_t-%s_eps-%s_wd-%s_rs-1' % (
-    dataset_name, use_slab,
-    step_size, temp, epsilon, weight_decay)
-if percentile != 95:
-    model_name = model_name + '_percentile-%s' % percentile
-
-if no_LP:
-    model_name = model_name + '_no-LP'
-if timed:
-    model_name = model_name + '_timed'
+    temp = 0.001  # Delta for smooth hinge loss
+    use_copy = True  # Copy the poisened points to get the specified amount given by epsilon
+    use_LP = True  # Use LP rounding
+    num_classes = 2  # Only binary classification possible
 
 
-X_train, Y_train, X_test, Y_test = datasets.load_dataset(dataset_name)
+    if no_LP:
+        assert dataset_name == 'german'
+        use_LP = False
+        percentile = 80
 
-total_negative = int(np.round(np.sum(Y_train == -1)))
-total_positive = int(np.round(np.sum(Y_train == 1)))
-print('total positive', total_positive)
-print('total negative', total_negative)
-p_over_m = total_negative / total_positive
+    model_name = str(dataset_name)+'_'+str(attack_method)+'_'+str(epsilon)+'_'+str(lamb)
+    #model_name = 'smooth_hinge_%s_sphere-True_slab-%s_start-copy_lflip-True_step-%s_t-%s_eps-%s_wd-%s_rs-1' % (
+    #    dataset_name, use_slab,
+    #    step_size, temp, epsilon, weight_decay)
+    if percentile != 95:
+        model_name = model_name + '_percentile-%s' % percentile
 
-general_train_idx = X_train.shape[0]
-
-
-if sparse.issparse(X_train):
-    X_train = X_train.toarray()
-if sparse.issparse(X_test):
-    X_test = X_test.toarray()
-
-
-class_map, centroids, centroid_vec, sphere_radii, slab_radii = data.get_data_params(
-    X_train, Y_train, percentile=percentile)
-
-feasible_flipped_mask = iterative_attack.get_feasible_flipped_mask(
-    X_train, Y_train,
-    centroids,
-    centroid_vec,
-    sphere_radii,
-    slab_radii,
-    class_map,
-    use_slab=use_slab)
-
-X_modified, Y_modified, indices_to_poison, copy_array, advantaged = iterative_attack.init_gradient_attack_from_mask(
-    X_train, Y_train,
-    epsilon,
-    feasible_flipped_mask,
-    general_train_idx,
-    sensitive_file,
-    attack_method,
-    use_copy=use_copy)
-
-tf.compat.v1.reset_default_graph()
-
-input_dim = X_train.shape[1]
-train = DataSet(X_train, Y_train)
-validation = None
-test = DataSet(X_test, Y_test)
-
-model = SmoothHinge(
-    sensitive_feature_idx=sensitive_idx,
-    input_dim=input_dim,
-    temp=temp,
-    weight_decay=weight_decay,
-    use_bias=True,
-    num_classes=num_classes,
-    batch_size=batch_size,
-    train_dataset=train,
-    validation_dataset=validation,
-    test_dataset=test,
-    initial_learning_rate=initial_learning_rate,
-    decay_epochs=None,
-    mini_batch=False,
-    train_dir=output_root,
-    log_dir='log',
-    model_name=model_name,
-    method=attack_method,
-    general_train_idx=general_train_idx,
-    sensitive_file=sensitive_file,
-    lamb=lamb,
-    p_over_m=p_over_m)
+    if no_LP:
+        model_name = model_name + '_no-LP'
+    if timed:
+        model_name = model_name + '_timed'
 
 
-model.update_train_x_y(X_modified, Y_modified)
-model.train()
+    X_train, Y_train, X_test, Y_test = datasets.load_dataset(dataset_name)
 
-if timed:
-    start_time = time.time()
-else:
-    start_time = None
+    total_negative = int(np.round(np.sum(Y_train == -1)))
+    total_positive = int(np.round(np.sum(Y_train == 1)))
+    print('total positive', total_positive)
+    print('total negative', total_negative)
+    p_over_m = total_negative / total_positive
 
-
-X_modified = model.train_dataset.x
-Y_modified = model.train_dataset.labels
+    general_train_idx = X_train.shape[0]
 
 
-projection_fn = get_projection_fn_for_dataset(
-    X_modified,
-    Y_modified,
-    use_slab,
-    use_LP,
-    percentile)
+    if sparse.issparse(X_train):
+        X_train = X_train.toarray()
+    if sparse.issparse(X_test):
+        X_test = X_test.toarray()
 
-iterative_attack.iterative_attack(
-    model,
-    general_train_idx,
-    sensitive_file,
-    attack_method,
-    advantaged,
-    indices_to_poison=indices_to_poison,
-    test_idx=None,
-    test_description=None,
-    step_size=step_size,
-    num_iter=total_grad_iter,
-    loss_type=loss_type,
-    projection_fn=projection_fn,
-    output_root=output_root,
-    num_copies=copy_array,
-    stop_after=stop_after,
-    start_time=start_time)
-print("The end")
+
+    class_map, centroids, centroid_vec, sphere_radii, slab_radii = data.get_data_params(
+        X_train, Y_train, percentile=percentile)
+
+    feasible_flipped_mask = iterative_attack.get_feasible_flipped_mask(
+        X_train, Y_train,
+        centroids,
+        centroid_vec,
+        sphere_radii,
+        slab_radii,
+        class_map,
+        use_slab=use_slab)
+
+    X_modified, Y_modified, indices_to_poison, copy_array, advantaged = iterative_attack.init_gradient_attack_from_mask(
+        X_train, Y_train,
+        epsilon,
+        feasible_flipped_mask,
+        general_train_idx,
+        sensitive_file,
+        attack_method,
+        use_copy=use_copy)
+
+    tf.compat.v1.reset_default_graph()
+
+    input_dim = X_train.shape[1]
+    train = DataSet(X_train, Y_train)
+    validation = None
+    test = DataSet(X_test, Y_test)
+
+    model = SmoothHinge(
+        sensitive_feature_idx=sensitive_idx,
+        input_dim=input_dim,
+        temp=temp,
+        weight_decay=weight_decay,
+        use_bias=True,
+        num_classes=num_classes,
+        batch_size=batch_size,
+        train_dataset=train,
+        validation_dataset=validation,
+        test_dataset=test,
+        initial_learning_rate=initial_learning_rate,
+        decay_epochs=None,
+        mini_batch=False,
+        train_dir=output_root,
+        log_dir='log',
+        model_name=model_name,
+        method=attack_method,
+        general_train_idx=general_train_idx,
+        sensitive_file=sensitive_file,
+        lamb=lamb,
+        p_over_m=p_over_m,
+        eval_mode=eval_mode)
+
+    # If the evaluation of the model takes place, then we skip train and just do eval
+    if(eval_mode == True):
+        model.checkpoint_file = os.path.join(model.train_dir, "%s-checkpoint" % model_name)
+        print('MODEL CHECKPOINT NAME \n', model.checkpoint_file)
+        results = model.load_checkpoint(int(args.iter_to_load), do_checks=True)
+        print(results)
+        return results;
+
+    model.update_train_x_y(X_modified, Y_modified)
+    model.train()
+
+    if timed:
+        start_time = time.time()
+    else:
+        start_time = None
+
+
+    X_modified = model.train_dataset.x
+    Y_modified = model.train_dataset.labels
+
+
+    projection_fn = get_projection_fn_for_dataset(
+        X_modified,
+        Y_modified,
+        use_slab,
+        use_LP,
+        percentile)
+
+    iterative_attack.iterative_attack(
+        model,
+        general_train_idx,
+        sensitive_file,
+        attack_method,
+        advantaged,
+        indices_to_poison=indices_to_poison,
+        test_idx=None,
+        test_description=None,
+        step_size=step_size,
+        num_iter=total_grad_iter,
+        loss_type=loss_type,
+        projection_fn=projection_fn,
+        output_root=output_root,
+        num_copies=copy_array,
+        stop_after=stop_after,
+        start_time=start_time)
+    print("The end")
+
+if __name__ == "__main__":
+    main()
