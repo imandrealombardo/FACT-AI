@@ -96,10 +96,11 @@ def main():
     batch_size = int(args.batch_size)
     eval_mode = bool(args.eval_mode)
     stopping_method = str(args.stopping_method)
+    stopping_method = str(args.stopping_method)
     output_root = os.path.join(datasets.OUTPUT_FOLDER,
                                dataset_name, 'influence_data')
     datasets.safe_makedirs(output_root)
-
+    print('EVAL MODE IS ', eval_mode)
     if(attack_method == "IAF"):
         loss_type = 'adversarial_loss'
     elif(attack_method == "Koh"):
@@ -123,7 +124,7 @@ def main():
         use_LP = False
         percentile = 80
 
-    model_name = str(dataset_name)+'_'+str(attack_method)+'_'+str(epsilon)+'_'+str(lamb)
+    model_name = str(dataset_name)+'_'+str(attack_method)+'_'+str(epsilon)+'_'+str(lamb)+'_'+str(stopping_method)
     #model_name = 'smooth_hinge_%s_sphere-True_slab-%s_start-copy_lflip-True_step-%s_t-%s_eps-%s_wd-%s_rs-1' % (
     #    dataset_name, use_slab,
     #    step_size, temp, epsilon, weight_decay)
@@ -165,7 +166,7 @@ def main():
         class_map,
         use_slab=use_slab)
 
-    X_modified, Y_modified, indices_to_poison, copy_array, advantaged = iterative_attack.init_gradient_attack_from_mask(
+    X_modified, Y_modified, indices_to_poison, copy_array, advantaged, test_gender_labels = iterative_attack.init_gradient_attack_from_mask(
         X_train, Y_train,
         epsilon,
         feasible_flipped_mask,
@@ -175,6 +176,28 @@ def main():
         use_copy=use_copy)
 
     tf.compat.v1.reset_default_graph()
+
+    # Only used in Solans attack
+    p_over_m = None
+    advantaged_group_selector = None
+    disadvantaged_group_selector = None
+
+    if attack_method == "Solans":
+        disadvantaged = -1 * advantaged
+
+        advantaged_group_selector = np.where(test_gender_labels == advantaged)[0]
+        disadvantaged_group_selector = np.where(
+            test_gender_labels == disadvantaged)[0]
+
+        print("Group selector")
+        print(advantaged_group_selector)
+
+        # print(len(advantaged_group_selector))
+        # print(len(disadvantaged_group_selector))
+
+        p_over_m = len(disadvantaged_group_selector) / \
+                   len(advantaged_group_selector)
+
 
     input_dim = X_train.shape[1]
     train = DataSet(X_train, Y_train)
@@ -187,6 +210,7 @@ def main():
         temp=temp,
         weight_decay=weight_decay,
         use_bias=True,
+        advantaged=advantaged,
         num_classes=num_classes,
         batch_size=batch_size,
         train_dataset=train,
@@ -203,7 +227,10 @@ def main():
         sensitive_file=sensitive_file,
         lamb=lamb,
         p_over_m=p_over_m,
-        eval_mode=eval_mode)
+        advantaged_group_selector=advantaged_group_selector,
+        disadvantaged_group_selector=disadvantaged_group_selector,
+        eval_mode=eval_mode,
+        stopping_method=stopping_method)
 
     # If the evaluation of the model takes place, then we skip train and just do eval
     if(eval_mode == True):

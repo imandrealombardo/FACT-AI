@@ -1,6 +1,2 @@
-model_checkpoint_path: "compas_RAA_0.5_1.0-checkpoint-21"
-all_model_checkpoint_paths: "compas_RAA_0.5_1.0-checkpoint-17"
-all_model_checkpoint_paths: "compas_RAA_0.5_1.0-checkpoint-18"
-all_model_checkpoint_paths: "compas_RAA_0.5_1.0-checkpoint-19"
-all_model_checkpoint_paths: "compas_RAA_0.5_1.0-checkpoint-20"
-all_model_checkpoint_paths: "compas_RAA_0.5_1.0-checkpoint-21"
+model_checkpoint_path: "compas_Solans_0.5_1.0_Accuracy-checkpoint"
+all_model_checkpoint_paths: "compas_Solans_0.5_1.0_Accuracy-checkpoint"

@@ -85,12 +85,15 @@ class GenericNeuralNet(object):
         self.sensitive_file=kwargs.pop('sensitive_file')
         self.lamb = kwargs.pop('lamb')
         self.p_over_m = kwargs.pop('p_over_m')
-
         self.advantaged = kwargs.pop('advantaged')
         self.advantaged_group_selector = kwargs.pop('advantaged_group_selector')
         self.disadvantaged_group_selector = kwargs.pop('disadvantaged_group_selector')
-                self.eval_mode = kwargs.pop('eval_mode')
+        self.eval_mode = kwargs.pop('eval_mode')
         self.attack_iter = None
+        self.stopping_method = kwargs.pop('stopping_method')
+
+        self.max_fairness = 0
+        self.max_accuracy = 0
        # print('lambda is: ', self.lamb)
 
         if 'keep_probs' in kwargs: self.keep_probs = kwargs.pop('keep_probs')
@@ -382,7 +385,7 @@ class GenericNeuralNet(object):
 
     # Not used but might be useful later
     def load_checkpoint(self, iter_to_load, do_checks=True):
-        checkpoint_to_load = "%s-%s" % (self.checkpoint_file, iter_to_load)
+        checkpoint_to_load = "%s-%s" % (self.checkpoint_file, self.stopping_method)
         self.saver.restore(self.sess, checkpoint_to_load)
 
         if do_checks:

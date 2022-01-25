@@ -192,12 +192,19 @@ class SmoothHinge(GenericNeuralNet):
         params_feed_dict = {}
         params_feed_dict[self.W_placeholder] = W
         self.sess.run(self.set_params_op, feed_dict=params_feed_dict)
-
+        results = self.print_model_eval()
+        E0, Parity, test_acc = results['E0'], results['Parity'], results['test_acc']
         if save_checkpoints:
-            print('MODEL NAME!!!!', self.model_name)
-            self.saver.save(self.sess, self.checkpoint_file, global_step=self.attack_iter)
-            #self.load_checkpoint(0, do_checks=True)
-
+            if(self.stopping_method=='Parity'):
+                if(E0 + Parity > self.max_fairness):
+                    self.saver.save(self.sess, self.checkpoint_file)
+                    self.max_fairness=E0+Parity
+                    print('BEST MAX FAIRNESS (E0+Parity)', self.max_fairness)
+            if(self.stopping_method=='Accuracy'):
+                if(test_acc > self.max_accuracy):
+                    self.saver.save(self.sess, self.checkpoint_file)
+                    print('BEST MAX TEST ACCURACY', self.max_accuracy)
+                    self.max_accuracy=test_acc
 
         if verbose:
             # print('CG training took %s iter.' % model.n_iter_)
