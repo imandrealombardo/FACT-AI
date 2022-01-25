@@ -34,8 +34,6 @@ def main():
 
     np.random.seed(1)
 
-    initial_learning_rate = 0.001
-
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--total_grad_iter', default=300,
@@ -46,7 +44,7 @@ def main():
                         help="Specify dataset file name")
     parser.add_argument('--percentile', default=90,
                         help="percentage of data to keep in feasible set")
-    parser.add_argument('--epsilon', default=0.03,
+    parser.add_argument('--epsilon', default=0.5,
                         help="partial of number of datapoints as number of poisened points to create")
     parser.add_argument('--lamb', default=1.,
                         help="adversarial loss lambda")
@@ -66,8 +64,8 @@ def main():
                         default='german_group_label.npz')
     parser.add_argument('--stop_after', default='2',
                         help='Specify after how many iterations without improving the attack should stop')
-    parser.add_argument('--batch_size', default=100,
-                        help="Specify batch size")
+    parser.add_argument('--batch_size', default=1,
+                        help="Specify batch size (Note: in the current implementation no mini-batch training is used. This is leftover for use in possible extensions")
 
     parser.add_argument('--eval_mode', default=False,
                         help="Evaluation or training mode")
@@ -111,23 +109,15 @@ def main():
     print('epsilon: %s' % epsilon)
     print('use_slab: %s' % use_slab)
 
+    # Not used leftover for use in possible extensions (different optimization)
+    initial_learning_rate = 0.001
     temp = 0.001  # Delta for smooth hinge loss
     use_copy = True  # Copy the poisened points to get the specified amount given by epsilon
-    use_LP = True  # Use LP rounding
+    use_LP = False if no_LP else True  # Use LP rounding
     num_classes = 2  # Only binary classification possible
-
-    if no_LP:
-        assert dataset_name == 'german'
-        use_LP = False
-        percentile = 80
 
     model_name = str(dataset_name) + '_' + str(attack_method) + '_' + \
         str(epsilon) + '_' + str(lamb) + '_' + str(stopping_method)
-    # model_name = 'smooth_hinge_%s_sphere-True_slab-%s_start-copy_lflip-True_step-%s_t-%s_eps-%s_wd-%s_rs-1' % (
-    #    dataset_name, use_slab,
-    #    step_size, temp, epsilon, weight_decay)
-    if percentile != 95:
-        model_name = model_name + '_percentile-%s' % percentile
 
     if no_LP:
         model_name = model_name + '_no-LP'
@@ -183,7 +173,7 @@ def main():
             len(advantaged_group_selector)
 
     input_dim = X_train.shape[1]
-    train = DataSet(X_train, Y_train)
+    train = DataSet(X_modified, Y_modified)
     validation = None
     test = DataSet(X_test, Y_test)
 
