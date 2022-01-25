@@ -194,16 +194,18 @@ class SmoothHinge(GenericNeuralNet):
         self.sess.run(self.set_params_op, feed_dict=params_feed_dict)
         results = self.print_model_eval()
         E0, Parity, test_acc = results['E0'], results['Parity'], results['test_acc']
+        print('E0', E0)
+        print('parity', Parity)
         if save_checkpoints:
             if(self.stopping_method=='Parity'):
                 if(E0 + Parity > self.max_fairness):
                     self.saver.save(self.sess, self.checkpoint_file)
                     self.max_fairness=E0+Parity
-                    print('BEST MAX FAIRNESS (E0+Parity)', self.max_fairness)
+                    print('BEST MAX FAIRNESS (E0+Parity) \n', self.max_fairness)
             if(self.stopping_method=='Accuracy'):
                 if(test_acc > self.max_accuracy):
                     self.saver.save(self.sess, self.checkpoint_file)
-                    print('BEST MAX TEST ACCURACY', self.max_accuracy)
+                    print('BEST MAX TEST ACCURACY \n', self.max_accuracy)
                     self.max_accuracy=test_acc
 
         if verbose:

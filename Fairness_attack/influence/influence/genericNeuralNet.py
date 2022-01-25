@@ -231,10 +231,9 @@ class GenericNeuralNet(object):
 
         print("******************Poison model EO bias on Test" + str ( abs( (a_female_test/(a_female_test+b_female_test)) - (a_male_test/(a_male_test+b_male_test)) )) )
 
-        if (self.eval_mode == True):
-            Parity = abs( (test_female_one_prediction.shape[0]/index_female_test.shape[0]) - (test_male_one_prediction.shape[0]/index_male_test.shape[0])  )
-            E0 = abs( (a_female_test/(a_female_test+b_female_test)) - (a_male_test/(a_male_test+b_male_test)) )
-            return Parity, E0
+        Parity = abs( (test_female_one_prediction.shape[0]/index_female_test.shape[0]) - (test_male_one_prediction.shape[0]/index_male_test.shape[0])  )
+        E0 = abs( (a_female_test/(a_female_test+b_female_test)) - (a_male_test/(a_male_test+b_male_test)) )
+        return Parity, E0
 
     def get_vec_to_list_fn(self):
         params_val = self.sess.run(self.params)
@@ -359,11 +358,8 @@ class GenericNeuralNet(object):
         print('Train acc on all data:  %s' % train_acc_val)
         print('Test acc on all data:   %s' % test_acc_val)
 
-        if(self.eval_mode==True):
-            Parity, E0 = self.get_fairness_measures(test_predictions,train_predictions)
-        else:
-            self.get_fairness_measures(test_predictions, train_predictions)
-            Parity, E0 = None, None
+        Parity, E0 = self.get_fairness_measures(test_predictions,train_predictions)
+
         grad_norm = np.linalg.norm(np.concatenate(grad_loss_val))
         params_norm = np.linalg.norm(np.concatenate(params_val))
         print('Norm of the mean of gradients: %s' % grad_norm)
