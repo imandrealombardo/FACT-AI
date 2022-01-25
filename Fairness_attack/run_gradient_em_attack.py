@@ -18,6 +18,7 @@ from influence.influence.dataset import DataSet
 
 import tensorflow as tf
 
+
 def main():
     def get_projection_fn_for_dataset(X, Y, use_slab, use_LP, percentile):
         projection_fn = data.get_projection_fn(
@@ -31,11 +32,9 @@ def main():
 
         return projection_fn
 
-
     np.random.seed(1)
 
     initial_learning_rate = 0.001
-
 
     parser = argparse.ArgumentParser()
 
@@ -45,7 +44,7 @@ def main():
                         help="Utilize slab defense --> Anomaly detector=interesection with L2 defense")
     parser.add_argument('--dataset', default='german',
                         help="Specify dataset file name")
-    parser.add_argument('--percentile', default=95,
+    parser.add_argument('--percentile', default=90,
                         help="percentage of data to keep in feasible set")
     parser.add_argument('--epsilon', default=0.03,
                         help="partial of number of datapoints as number of poisened points to create")
@@ -112,20 +111,19 @@ def main():
     print('epsilon: %s' % epsilon)
     print('use_slab: %s' % use_slab)
 
-
     temp = 0.001  # Delta for smooth hinge loss
     use_copy = True  # Copy the poisened points to get the specified amount given by epsilon
     use_LP = True  # Use LP rounding
     num_classes = 2  # Only binary classification possible
-
 
     if no_LP:
         assert dataset_name == 'german'
         use_LP = False
         percentile = 80
 
-    model_name = str(dataset_name)+'_'+str(attack_method)+'_'+str(epsilon)+'_'+str(lamb)+'_'+str(stopping_method)
-    #model_name = 'smooth_hinge_%s_sphere-True_slab-%s_start-copy_lflip-True_step-%s_t-%s_eps-%s_wd-%s_rs-1' % (
+    model_name = str(dataset_name) + '_' + str(attack_method) + '_' + \
+        str(epsilon) + '_' + str(lamb) + '_' + str(stopping_method)
+    # model_name = 'smooth_hinge_%s_sphere-True_slab-%s_start-copy_lflip-True_step-%s_t-%s_eps-%s_wd-%s_rs-1' % (
     #    dataset_name, use_slab,
     #    step_size, temp, epsilon, weight_decay)
     if percentile != 95:
@@ -136,23 +134,14 @@ def main():
     if timed:
         model_name = model_name + '_timed'
 
-
     X_train, Y_train, X_test, Y_test = datasets.load_dataset(dataset_name)
 
-    total_negative = int(np.round(np.sum(Y_train == -1)))
-    total_positive = int(np.round(np.sum(Y_train == 1)))
-    print('total positive', total_positive)
-    print('total negative', total_negative)
-    p_over_m = total_negative / total_positive
-
     general_train_idx = X_train.shape[0]
-
 
     if sparse.issparse(X_train):
         X_train = X_train.toarray()
     if sparse.issparse(X_test):
         X_test = X_test.toarray()
-
 
     class_map, centroids, centroid_vec, sphere_radii, slab_radii = data.get_data_params(
         X_train, Y_train, percentile=percentile)
@@ -185,19 +174,13 @@ def main():
     if attack_method == "Solans":
         disadvantaged = -1 * advantaged
 
-        advantaged_group_selector = np.where(test_gender_labels == advantaged)[0]
+        advantaged_group_selector = np.where(
+            test_gender_labels == advantaged)[0]
         disadvantaged_group_selector = np.where(
             test_gender_labels == disadvantaged)[0]
 
-        print("Group selector")
-        print(advantaged_group_selector)
-
-        # print(len(advantaged_group_selector))
-        # print(len(disadvantaged_group_selector))
-
         p_over_m = len(disadvantaged_group_selector) / \
-                   len(advantaged_group_selector)
-
+            len(advantaged_group_selector)
 
     input_dim = X_train.shape[1]
     train = DataSet(X_train, Y_train)
@@ -234,11 +217,12 @@ def main():
 
     # If the evaluation of the model takes place, then we skip train and just do eval
     if(eval_mode == True):
-        model.checkpoint_file = os.path.join(model.train_dir, "%s-checkpoint" % model_name)
+        model.checkpoint_file = os.path.join(
+            model.train_dir, "%s-checkpoint" % model_name)
         print('MODEL CHECKPOINT NAME \n', model.checkpoint_file)
         results = model.load_checkpoint(int(args.iter_to_load), do_checks=True)
         print(results)
-        return results;
+        return results
 
     model.update_train_x_y(X_modified, Y_modified)
     model.train()
@@ -248,10 +232,8 @@ def main():
     else:
         start_time = None
 
-
     X_modified = model.train_dataset.x
     Y_modified = model.train_dataset.labels
-
 
     projection_fn = get_projection_fn_for_dataset(
         X_modified,
@@ -278,6 +260,7 @@ def main():
         stop_after=stop_after,
         start_time=start_time)
     print("The end")
+
 
 if __name__ == "__main__":
     main()
