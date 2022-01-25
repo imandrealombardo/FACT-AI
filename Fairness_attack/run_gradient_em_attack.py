@@ -72,7 +72,7 @@ def main():
 
     parser.add_argument('--eval_mode', default=False,
                         help="Evaluation or training mode")
-    parser.add_argument('--iter_to_load', default=None,
+    parser.add_argument('--iter_to_load', default=0,
                         help="Number of the interation of the checkpoint to load")
     parser.add_argument('--stopping_method', default='Accuracy',
                         help="The metric on which the early stopping is based. Fairness metrics or the test accuracy.")

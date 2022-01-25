@@ -381,7 +381,7 @@ class GenericNeuralNet(object):
 
     # Not used but might be useful later
     def load_checkpoint(self, iter_to_load, do_checks=True):
-        checkpoint_to_load = "%s-%s" % (self.checkpoint_file, self.stopping_method)
+        checkpoint_to_load = "%s" % (self.checkpoint_file)
         self.saver.restore(self.sess, checkpoint_to_load)
 
         if do_checks:
