@@ -1,0 +1,2 @@
+model_checkpoint_path: "compas_Koh_0.5_0_Accuracy-checkpoint"
+all_model_checkpoint_paths: "compas_Koh_0.5_0_Accuracy-checkpoint"
