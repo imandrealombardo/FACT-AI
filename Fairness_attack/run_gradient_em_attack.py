@@ -180,7 +180,8 @@ def main():
             len(advantaged_group_selector)
 
     input_dim = X_train.shape[1]
-    train = DataSet(X_modified, Y_modified)
+    train = DataSet(X_modified, Y_modified) if epsilon != 0.0 else DataSet(
+        X_train, Y_train)
     validation = None
     test = DataSet(X_test, Y_test)
 
@@ -223,44 +224,46 @@ def main():
         print(results)
         return results
 
-    model.update_train_x_y(X_modified, Y_modified)
     model.train()
 
-    if timed:
-        start_time = time.time()
-    else:
-        start_time = None
+    # only attack for valid epsilon
+    if epsilon > 0:
 
-    X_modified = model.train_dataset.x
-    Y_modified = model.train_dataset.labels
+        if timed:
+            start_time = time.time()
+        else:
+            start_time = None
 
-    projection_fn = get_projection_fn_for_dataset(
-        X_modified,
-        Y_modified,
-        use_slab,
-        use_LP,
-        percentile)
+        X_modified = model.train_dataset.x
+        Y_modified = model.train_dataset.labels
 
-    iterative_attack.iterative_attack(
-        model,
-        general_train_idx,
-        sensitive_file,
-        attack_method,
-        advantaged,
-        indices_to_poison=indices_to_poison,
-        test_idx=None,
-        test_description=None,
-        step_size=step_size,
-        num_iter=total_grad_iter,
-        loss_type=loss_type,
-        projection_fn=projection_fn,
-        output_root=output_root,
-        num_copies=copy_array,
-        stop_after=stop_after,
-        start_time=start_time,
-        display_iter_time=display_iter_time,
-        stopping_method=stopping_method)
-    print("The end")
+        projection_fn = get_projection_fn_for_dataset(
+            X_modified,
+            Y_modified,
+            use_slab,
+            use_LP,
+            percentile)
+
+        iterative_attack.iterative_attack(
+            model,
+            general_train_idx,
+            sensitive_file,
+            attack_method,
+            advantaged,
+            indices_to_poison=indices_to_poison,
+            test_idx=None,
+            test_description=None,
+            step_size=step_size,
+            num_iter=total_grad_iter,
+            loss_type=loss_type,
+            projection_fn=projection_fn,
+            output_root=output_root,
+            num_copies=copy_array,
+            stop_after=stop_after,
+            start_time=start_time,
+            display_iter_time=display_iter_time,
+            stopping_method=stopping_method)
+        print("The end")
 
 
 if __name__ == "__main__":

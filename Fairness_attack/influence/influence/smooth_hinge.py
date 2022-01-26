@@ -195,11 +195,9 @@ class SmoothHinge(GenericNeuralNet):
         self.sess.run(self.set_params_op, feed_dict=params_feed_dict)
         results = self.print_model_eval()
         E0, Parity, test_acc = results['E0'], results['Parity'], results['test_acc']
-        print('E0', E0)
-        print('parity', Parity)
-        if(self.log_metrics==True):
+        if(self.log_metrics == True):
             self.accuracies.append(test_acc)
-            self.average_parities.append((E0+Parity)/2)
+            self.average_parities.append((E0 + Parity) / 2)
             data = {'Accuracies': self.accuracies,
                     'Average_Parities': self.average_parities}
             # Save logs as .json for accuracies/parities of every iteration
@@ -208,19 +206,19 @@ class SmoothHinge(GenericNeuralNet):
         # Check whether to save checkpoints
         if save_checkpoints:
             # Saving checkpoints depending on the stopping metric.
-            if(self.stopping_method=='Parity'):
+            if(self.stopping_method == 'Parity'):
                 if(E0 + Parity > self.max_fairness):
                     self.saver.save(self.sess, self.checkpoint_file)
-                    self.max_fairness=E0+Parity
-                    print('BEST MAX FAIRNESS (E0+Parity) \n', self.max_fairness)
+                    self.max_fairness = E0 + Parity
+                    print('BEST MAX FAIRNESS (E0+Parity)/2 \n',
+                          self.max_fairness / 2)
 
-            if(self.stopping_method=='Accuracy'):
+            if(self.stopping_method == 'Accuracy'):
                 if(test_acc < self.min_accuracy):
                     self.saver.save(self.sess, self.checkpoint_file)
-                    self.max_accuracy=test_acc
+                    self.min_accuracy = test_acc
 
                     print('BEST MIN TEST ACCURACY \n', self.min_accuracy)
-
 
         if verbose:
             # print('CG training took %s iter.' % model.n_iter_)
