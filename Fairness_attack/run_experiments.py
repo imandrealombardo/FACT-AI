@@ -1,10 +1,8 @@
-
 import os
 
 datasets = ["compas", "german", "drug"]
 attacks =  ["IAF", "RAA", "RNAA", "Koh", "Solans"]
 stopping_methods = ["Parity", "Accuracy"]
-
 
 # ================= To replicate Figure 2 of the original paper: ================= 
 
@@ -31,9 +29,10 @@ for dataset in datasets:
     for attack in attacks:
         for stopping_method in stopping_methods:
             for eps in epsilon:
-                print("\n============================================")
-                print("Reproducing the results of Figure 3...")
-                print(f"Run parameters: \n - Dataset: {dataset}\n - Attack: {attack}\n - Stopping method: {stopping_method}\n - Epsilon: {eps}, Lambda: {lamb}")
-                print("============================================")
-                
-                os.system(f"python -u run_gradient_em_attack.py --total_grad_iter 10000 --dataset {dataset} --use_slab --epsilon {eps} --lamb {lamb} --method {attack} --sensitive_attr_filename {dataset}_group_label.npz --stopping_method {stopping_methods} --stop_after 5\n")
+                for lamb in lambdas:
+                    print("\n============================================")
+                    print("Reproducing the results of Figure 3...")
+                    print(f"Run parameters: \n - Dataset: {dataset}\n - Attack: {attack}\n - Stopping method: {stopping_method}\n - Epsilon: {eps}, Lambda: {lamb}")
+                    print("============================================")
+                    
+                    os.system(f"python -u run_gradient_em_attack.py --total_grad_iter 10000 --dataset {dataset} --use_slab --epsilon {eps} --lamb {lamb} --method {attack} --sensitive_attr_filename {dataset}_group_label.npz --stopping_method {stopping_methods} --stop_after 5\n")
