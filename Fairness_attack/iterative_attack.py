@@ -187,7 +187,8 @@ def iterative_attack(
         output_root=None,
         num_copies=None,
         stop_after=3,
-        start_time=None):
+        start_time=None,
+        display_iter_time=False):
 
     if num_copies is not None:
         assert len(num_copies) == 2
@@ -218,6 +219,7 @@ def iterative_attack(
         nums_copies = np.zeros((num_iter, len(indices_to_poison)))
 
     for attack_iter in range(num_iter):
+        since = time.time()
         print(num_iter)
         print('*** Iter: %s' % attack_iter)
         model.attack_iter = attack_iter
@@ -321,6 +323,13 @@ def iterative_attack(
                 np.savez(os.path.join(output_root, '%s_timing' % (model.model_name)),
                          times_taken=times_taken,
                          nums_copies=nums_copies)
+
+            # Printing time for every iter, if display_iter_time is set to True
+            now = time.time()
+            if (display_iter_time == True):
+                total_time = now - since
+                print('TOTAL ELAPSED TIME FOR ONE ITERATION \n', total_time)
+
             if stop_counter >= stop_after:
                 break
     if start_time is not None:

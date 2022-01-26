@@ -76,7 +76,7 @@ def main():
     parser.add_argument('--log_metrics', default=False,
                         help="Log metrics for training one model, and export them as .json")
     parser.add_argument('--display_iter_time', default=False,
-                        help="Print time required to run training iteration)
+                        help="Print time required to run training iteration")
 
     args = parser.parse_args()
 
@@ -98,9 +98,12 @@ def main():
     batch_size = int(args.batch_size)
     eval_mode = bool(args.eval_mode)
     stopping_method = str(args.stopping_method)
+    log_metrics = bool(args.log_metrics)
+    display_iter_time = bool(args.display_iter_time)
     output_root = os.path.join(datasets.OUTPUT_FOLDER,
                                dataset_name, 'influence_data')
     datasets.safe_makedirs(output_root)
+
     print('EVAL MODE IS ', eval_mode)
     if(attack_method == "IAF"):
         loss_type = 'adversarial_loss'
@@ -254,7 +257,8 @@ def main():
         output_root=output_root,
         num_copies=copy_array,
         stop_after=stop_after,
-        start_time=start_time)
+        start_time=start_time,
+        display_iter_time=display_iter_time)
     print("The end")
 
 

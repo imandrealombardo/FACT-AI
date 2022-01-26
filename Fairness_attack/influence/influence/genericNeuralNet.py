@@ -91,12 +91,16 @@ class GenericNeuralNet(object):
         self.eval_mode = kwargs.pop('eval_mode')
         self.attack_iter = None
         self.stopping_method = kwargs.pop('stopping_method')
-        self.log_metrics = kwars.pop('log_metrics')
+        self.log_metrics = kwargs.pop('log_metrics')
         self.display_iter_time = kwargs.pop('display_iter_time')
 
         self.max_fairness = 0
-        self.max_accuracy = 0
-       # print('lambda is: ', self.lamb)
+        self.min_accuracy = 1
+
+        # Variables used for logging metrics, if True
+        if(self.log_metrics==True):
+            self.accuracies = []
+            self.average_parities = []
 
         if 'keep_probs' in kwargs: self.keep_probs = kwargs.pop('keep_probs')
         else: self.keep_probs = None
