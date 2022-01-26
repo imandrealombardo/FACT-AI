@@ -9,6 +9,7 @@ from scipy.optimize import fmin_ncg
 
 import tensorflow as tf
 import math
+import json
 
 from .genericNeuralNet import GenericNeuralNet, variable_with_weight_decay
 
@@ -196,17 +197,30 @@ class SmoothHinge(GenericNeuralNet):
         E0, Parity, test_acc = results['E0'], results['Parity'], results['test_acc']
         print('E0', E0)
         print('parity', Parity)
+        if(self.log_metrics==True):
+            self.accuracies.append(test_acc)
+            self.average_parities.append((E0+Parity)/2)
+            data = {'Accuracies': self.accuracies,
+                    'Average_Parities': self.average_parities}
+            # Save logs as .json for accuracies/parities of every iteration
+            with open(str(self.checkpoint_file) + '.json', 'w') as f:
+                json.dump(data, f)
+        # Check whether to save checkpoints
         if save_checkpoints:
+            # Saving checkpoints depending on the stopping metric.
             if(self.stopping_method=='Parity'):
                 if(E0 + Parity > self.max_fairness):
                     self.saver.save(self.sess, self.checkpoint_file)
                     self.max_fairness=E0+Parity
                     print('BEST MAX FAIRNESS (E0+Parity) \n', self.max_fairness)
+
             if(self.stopping_method=='Accuracy'):
-                if(test_acc > self.max_accuracy):
+                if(test_acc < self.min_accuracy):
                     self.saver.save(self.sess, self.checkpoint_file)
-                    print('BEST MAX TEST ACCURACY \n', self.max_accuracy)
                     self.max_accuracy=test_acc
+
+                    print('BEST MIN TEST ACCURACY \n', self.min_accuracy)
+
 
         if verbose:
             # print('CG training took %s iter.' % model.n_iter_)

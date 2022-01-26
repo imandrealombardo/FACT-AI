@@ -187,7 +187,9 @@ def iterative_attack(
         output_root=None,
         num_copies=None,
         stop_after=3,
-        start_time=None):
+        start_time=None,
+        display_iter_time=False,
+        stopping_method='Accuracy'):
 
     if num_copies is not None:
         assert len(num_copies) == 2
@@ -205,6 +207,7 @@ def iterative_attack(
                       :copy_start + num_copies[0] + num_copies[1]] == -1)
 
     largest_test_loss = 0
+    largest_parity = 0
     stop_counter = 0
 
     print('Test idx: %s' % test_idx)
@@ -218,6 +221,7 @@ def iterative_attack(
         nums_copies = np.zeros((num_iter, len(indices_to_poison)))
 
     for attack_iter in range(num_iter):
+        since = time.time()
         print(num_iter)
         print('*** Iter: %s' % attack_iter)
         model.attack_iter = attack_iter
@@ -304,24 +308,52 @@ def iterative_attack(
 
         if ((attack_iter + 1) % 10 == 0) or (attack_iter == num_iter - 1):
             print('in')
-            # Calculate test loss
-            test_loss = results['test_loss']
-            if largest_test_loss < test_loss:
-                print('test loss match')
-                largest_test_loss = test_loss
-                np.savez(os.path.join(output_root, '%s_attack' % (model.model_name)),
-                         poisoned_X_train=poisoned_X_train,
-                         Y_train=model.train_dataset.labels,
-                         attack_iter=attack_iter + 1)
+            if(stopping_method=='Accuracy'):
+                # Calculate test loss
+                test_loss = results['test_loss']
+                if largest_test_loss < test_loss:
+                    print('test loss match')
+                    largest_test_loss = test_loss
+                    np.savez(os.path.join(output_root, '%s_attack' % (model.model_name)),
+                             poisoned_X_train=poisoned_X_train,
+                             Y_train=model.train_dataset.labels,
+                             attack_iter=attack_iter + 1)
 
-                stop_counter = 0
-            else:
-                stop_counter += 1
-            if start_time is not None:
-                np.savez(os.path.join(output_root, '%s_timing' % (model.model_name)),
-                         times_taken=times_taken,
-                         nums_copies=nums_copies)
+                    stop_counter = 0
+                else:
+                    stop_counter += 1
+                if start_time is not None:
+                    np.savez(os.path.join(output_root, '%s_timing' % (model.model_name)),
+                             times_taken=times_taken,
+                             nums_copies=nums_copies)
+
+            if(stopping_method=='Parity'):
+                # Calculate test loss
+                E0, Parity = results['E0'], results['Parity']
+                if largest_parity < E0+Parity:
+                    print('parity match')
+                    largest_parity = E0+Parity
+                    np.savez(os.path.join(output_root, '%s_attack' % (model.model_name)),
+                             poisoned_X_train=poisoned_X_train,
+                             Y_train=model.train_dataset.labels,
+                             attack_iter=attack_iter + 1)
+
+                    stop_counter = 0
+                else:
+                    stop_counter += 1
+                if start_time is not None:
+                    np.savez(os.path.join(output_root, '%s_timing' % (model.model_name)),
+                             times_taken=times_taken,
+                             nums_copies=nums_copies)
+
+            # Printing time for every iter, if display_iter_time is set to True
+            now = time.time()
+            if (display_iter_time == True):
+                total_time = now - since
+                print('TOTAL ELAPSED TIME FOR ONE ITERATION \n', total_time)
+
             if stop_counter >= stop_after:
+                print('STOPPING METHOD USED IS: ', stopping_method, ' STOPPING NOW')
                 break
     if start_time is not None:
         np.savez(os.path.join(output_root, '%s_timing' % (model.model_name)),

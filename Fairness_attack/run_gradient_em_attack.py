@@ -73,6 +73,11 @@ def main():
                         help="Number of the interation of the checkpoint to load")
     parser.add_argument('--stopping_method', default='Accuracy',
                         help="The metric on which the early stopping is based. Fairness metrics or the test accuracy.")
+    parser.add_argument('--log_metrics', default=False,
+                        help="Log metrics for training one model, and export them as .json")
+    parser.add_argument('--display_iter_time', default=False,
+                        help="Print time required to run training iteration")
+
     args = parser.parse_args()
 
     dataset_name = args.dataset
@@ -93,10 +98,12 @@ def main():
     batch_size = int(args.batch_size)
     eval_mode = bool(args.eval_mode)
     stopping_method = str(args.stopping_method)
-    stopping_method = str(args.stopping_method)
+    log_metrics = bool(args.log_metrics)
+    display_iter_time = bool(args.display_iter_time)
     output_root = os.path.join(datasets.OUTPUT_FOLDER,
                                dataset_name, 'influence_data')
     datasets.safe_makedirs(output_root)
+
     print('EVAL MODE IS ', eval_mode)
     if(attack_method == "IAF"):
         loss_type = 'adversarial_loss'
@@ -203,7 +210,9 @@ def main():
         advantaged_group_selector=advantaged_group_selector,
         disadvantaged_group_selector=disadvantaged_group_selector,
         eval_mode=eval_mode,
-        stopping_method=stopping_method)
+        stopping_method=stopping_method,
+        log_metrics=log_metrics,
+        display_iter_time=display_iter_time)
 
     # If the evaluation of the model takes place, then we skip train and just do eval
     if(eval_mode == True):
@@ -248,7 +257,9 @@ def main():
         output_root=output_root,
         num_copies=copy_array,
         stop_after=stop_after,
-        start_time=start_time)
+        start_time=start_time,
+        display_iter_time=display_iter_time,
+        stopping_method=stopping_method)
     print("The end")
 
 
