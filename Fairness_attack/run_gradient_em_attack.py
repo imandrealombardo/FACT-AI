@@ -258,7 +258,8 @@ def main():
         num_copies=copy_array,
         stop_after=stop_after,
         start_time=start_time,
-        display_iter_time=display_iter_time)
+        display_iter_time=display_iter_time,
+        stopping_method=stopping_method)
     print("The end")
 
 

@@ -198,7 +198,6 @@ class SmoothHinge(GenericNeuralNet):
         print('E0', E0)
         print('parity', Parity)
         if(self.log_metrics==True):
-            print('LOGGING METRICS!!! \n'*15)
             self.accuracies.append(test_acc)
             self.average_parities.append((E0+Parity)/2)
             data = {'Accuracies': self.accuracies,
@@ -216,10 +215,12 @@ class SmoothHinge(GenericNeuralNet):
                     print('BEST MAX FAIRNESS (E0+Parity) \n', self.max_fairness)
 
             if(self.stopping_method=='Accuracy'):
-                if(test_acc > self.max_accuracy):
+                if(test_acc < self.min_accuracy):
                     self.saver.save(self.sess, self.checkpoint_file)
                     self.max_accuracy=test_acc
-                    print('BEST MAX TEST ACCURACY \n', self.max_accuracy)
+
+                    print('BEST MIN TEST ACCURACY \n', self.min_accuracy)
+
 
         if verbose:
             # print('CG training took %s iter.' % model.n_iter_)
