@@ -91,6 +91,8 @@ class GenericNeuralNet(object):
         self.eval_mode = kwargs.pop('eval_mode')
         self.attack_iter = None
         self.stopping_method = kwargs.pop('stopping_method')
+        self.log_metrics = kwars.pop('log_metrics')
+        self.display_iter_time = kwargs.pop('display_iter_time')
 
         self.max_fairness = 0
         self.max_accuracy = 0

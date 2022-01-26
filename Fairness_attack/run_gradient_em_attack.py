@@ -73,6 +73,11 @@ def main():
                         help="Number of the interation of the checkpoint to load")
     parser.add_argument('--stopping_method', default='Accuracy',
                         help="The metric on which the early stopping is based. Fairness metrics or the test accuracy.")
+    parser.add_argument('--log_metrics', default=False,
+                        help="Log metrics for training one model, and export them as .json")
+    parser.add_argument('--display_iter_time', default=False,
+                        help="Print time required to run training iteration)
+
     args = parser.parse_args()
 
     dataset_name = args.dataset
@@ -92,7 +97,6 @@ def main():
     stop_after = int(args.stop_after)
     batch_size = int(args.batch_size)
     eval_mode = bool(args.eval_mode)
-    stopping_method = str(args.stopping_method)
     stopping_method = str(args.stopping_method)
     output_root = os.path.join(datasets.OUTPUT_FOLDER,
                                dataset_name, 'influence_data')
@@ -203,7 +207,9 @@ def main():
         advantaged_group_selector=advantaged_group_selector,
         disadvantaged_group_selector=disadvantaged_group_selector,
         eval_mode=eval_mode,
-        stopping_method=stopping_method)
+        stopping_method=stopping_method,
+        log_metrics=log_metrics,
+        display_iter_time=display_iter_time)
 
     # If the evaluation of the model takes place, then we skip train and just do eval
     if(eval_mode == True):
