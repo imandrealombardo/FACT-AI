@@ -202,37 +202,27 @@ class GenericNeuralNet(object):
         index_female_true_test = np.where(np.logical_and(group_label[self.general_train_idx:] == 1, Y_test==1))[0].astype(np.int32)
         index_female_false_test = np.where(np.logical_and(group_label[self.general_train_idx:] == 1, Y_test==-1))[0].astype(np.int32)
 
-
-        poi_test_hat_one = np.where(art_poisoned_predicts_test[:,0] == 1)[0].astype(np.int32)
-        poi_test_hat_zero = np.where(art_poisoned_predicts_test[:,0] == -1)[0].astype(np.int32)
-
-        poi_test_y_one_hat_one =  (np.where(np.logical_and(art_poisoned_predicts_test[:,0] == 1, Y_test==1))[0].astype(np.int32).shape[0]) / Y_test.shape[0]
-        poi_test_y_one_hat_zero = (np.where(np.logical_and(art_poisoned_predicts_test[:,0] == -1, Y_test==1))[0].astype(np.int32).shape[0])/Y_test.shape[0]
-        poi_test_y_zero_hat_one = (np.where(np.logical_and(art_poisoned_predicts_test[:,0] == 1, Y_test==-1))[0].astype(np.int32).shape[0])/Y_test.shape[0]
-        poi_test_y_zero_hat_zero = (np.where(np.logical_and(art_poisoned_predicts_test[:,0] == -1, Y_test==-1))[0].astype(np.int32).shape[0])/Y_test.shape[0]
  
         test_female_one_prediction = np.where(art_poisoned_predicts_test[index_female_test][:,0] == 1)[0].astype(np.int32)
-        test_female_zero_prediction = np.where(art_poisoned_predicts_test[index_female_test][:,0] == -1)[0].astype(np.int32)
+
         test_male_one_prediction = np.where(art_poisoned_predicts_test[index_male_test][:,0] == 1)[0].astype(np.int32)
-        test_male_zero_prediction = np.where(art_poisoned_predicts_test[index_male_test][:,0] == -1)[0].astype(np.int32)
+
         print("******************Poison model parity bias on Test" + str (   abs( (test_female_one_prediction.shape[0]/index_female_test.shape[0]) - (test_male_one_prediction.shape[0]/index_male_test.shape[0])  )     ))
 
-        a_female_test = (test_female_one_prediction.shape[0]/poi_test_hat_one.shape[0])*poi_test_y_one_hat_one
-        a_male_test = (test_male_one_prediction.shape[0]/poi_test_hat_one.shape[0])*poi_test_y_one_hat_one
 
-        b_female_test = (test_female_zero_prediction.shape[0]/poi_test_hat_zero.shape[0])*poi_test_y_one_hat_zero
-        b_male_test = (test_male_zero_prediction.shape[0]/poi_test_hat_zero.shape[0])*poi_test_y_one_hat_zero
 
-        c_female_test = (test_female_one_prediction.shape[0]/poi_test_hat_one.shape[0])*poi_test_y_zero_hat_one
-        c_male_test = (test_male_one_prediction.shape[0]/poi_test_hat_one.shape[0])*poi_test_y_zero_hat_one
+        female_true_positives = (np.where(np.logical_and(art_poisoned_predicts_test[index_female_test][:,0] == 1, Y_test[index_female_test]==1))[0].astype(np.int32).shape[0])
+        female_positives = (np.where(Y_test[index_female_test]==1)[0].astype(np.int32).shape[0])
 
-        d_female_test = (test_female_zero_prediction.shape[0]/poi_test_hat_zero.shape[0])*poi_test_y_zero_hat_zero
-        d_male_test = (test_male_zero_prediction.shape[0]/poi_test_hat_zero.shape[0])*poi_test_y_zero_hat_zero
+        male_true_positives = (np.where(np.logical_and(art_poisoned_predicts_test[index_male_test][:,0] == 1, Y_test[index_male_test]==1))[0].astype(np.int32).shape[0])
+        male_positives = (np.where(Y_test[index_male_test]==1)[0].astype(np.int32).shape[0])
 
-        print("******************Poison model EO bias on Test" + str ( abs( (a_female_test/(a_female_test+b_female_test)) - (a_male_test/(a_male_test+b_male_test)) )) )
+
+        print("******************Poison model EO bias on Test" + str ( abs( (female_true_positives/female_positives) - (male_true_positives/male_positives)) ))
+
 
         Parity = abs( (test_female_one_prediction.shape[0]/index_female_test.shape[0]) - (test_male_one_prediction.shape[0]/index_male_test.shape[0])  )
-        E0 = abs( (a_female_test/(a_female_test+b_female_test)) - (a_male_test/(a_male_test+b_male_test)) )
+        E0 = abs( (female_true_positives/female_positives) - (male_true_positives/male_positives))
         return Parity, E0
 
     def get_vec_to_list_fn(self):
