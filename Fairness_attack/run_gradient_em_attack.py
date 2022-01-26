@@ -140,30 +140,33 @@ def main():
     if sparse.issparse(X_test):
         X_test = X_test.toarray()
 
-    class_map, centroids, centroid_vec, sphere_radii, slab_radii = data.get_data_params(
-        X_train, Y_train, percentile=percentile)
+    advantaged = 1
+    if epsilon > 0:
+        class_map, centroids, centroid_vec, sphere_radii, slab_radii = data.get_data_params(
+            X_train, Y_train, percentile=percentile)
 
-    feasible_flipped_mask = iterative_attack.get_feasible_flipped_mask(
-        X_train, Y_train,
-        centroids,
-        centroid_vec,
-        sphere_radii,
-        slab_radii,
-        class_map,
-        use_slab=use_slab)
+        feasible_flipped_mask = iterative_attack.get_feasible_flipped_mask(
+            X_train, Y_train,
+            centroids,
+            centroid_vec,
+            sphere_radii,
+            slab_radii,
+            class_map,
+            use_slab=use_slab)
 
-    X_modified, Y_modified, indices_to_poison, copy_array, advantaged, test_gender_labels = iterative_attack.init_gradient_attack_from_mask(
-        X_train, Y_train,
-        epsilon,
-        feasible_flipped_mask,
-        general_train_idx,
-        sensitive_file,
-        attack_method,
-        use_copy=use_copy)
+        X_modified, Y_modified, indices_to_poison, copy_array, advantaged, test_gender_labels = iterative_attack.init_gradient_attack_from_mask(
+            X_train, Y_train,
+            epsilon,
+            feasible_flipped_mask,
+            general_train_idx,
+            sensitive_file,
+            attack_method,
+            use_copy=use_copy)
 
     tf.compat.v1.reset_default_graph()
 
     # Only used in Solans attack
+
     p_over_m = None
     advantaged_group_selector = None
     disadvantaged_group_selector = None

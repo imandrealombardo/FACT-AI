@@ -91,14 +91,6 @@ class SmoothHinge(GenericNeuralNet):
             tf.int32,
             shape=(None),
             name='labels_placeholder')
-        advantaged_group_placeholder = tf.compat.v1.placeholder(
-            tf.int32,
-            shape=(None),
-            name='advantaged_group_placeholder')
-        disadvantaged_group_placeholder = tf.compat.v1.placeholder(
-            tf.int32,
-            shape=(None),
-            name='disadvantaged_group_placeholder')
         return input_placeholder, labels_placeholder
 
     def inference(self, input):
