@@ -269,7 +269,6 @@ if __name__ == "__main__":
                         help='Specify after how many iterations without improving the attack should stop')
     parser.add_argument('--batch_size', default=1,
                         help="Specify batch size (Note: in the current implementation no mini-batch training is used. This is leftover for use in possible extensions")
-
     parser.add_argument('--eval_mode', default=False,
                         help="Evaluation or training mode")
     parser.add_argument('--iter_to_load', default=0,
@@ -281,8 +280,8 @@ if __name__ == "__main__":
     parser.add_argument('--display_iter_time', default=False,
                         help="Print time required to run training iteration")
 
-    args = parser.parse_args()
+    args = parser.parse_args().__dict__
 
-    run_attack(args)
+    run_attack(**args)
     
 
