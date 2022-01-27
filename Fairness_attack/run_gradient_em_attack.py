@@ -18,8 +18,27 @@ from influence.influence.dataset import DataSet
 
 import tensorflow as tf
 
+def run_attack(
+    total_grad_iter = 300,
+    use_slab = False,
+    dataset = "german",
+    percentile = 90,
+    epsilon = 0.5,
+    lamb = 1,
+    weight_decay = 0.09,
+    step_size = 0.1,
+    no_LP = False,
+    timed = False,
+    sensitive_feature_idx = 0,
+    method = "IAF",
+    stop_after = 2,
+    batch_size = 1,
+    eval_mode = False,
+    iter_to_load = 0,
+    stopping_method = 'Accuracy',
+    log_metrics = False,
+    display_iter_time = False):
 
-def main():
     def get_projection_fn_for_dataset(X, Y, use_slab, use_LP, percentile):
         projection_fn = data.get_projection_fn(
             X, Y,
@@ -34,80 +53,29 @@ def main():
 
     np.random.seed(1)
 
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('--total_grad_iter', default=300,
-                        help="Maximum number of attack gradient iterations for the attack")
-    parser.add_argument('--use_slab', action='store_true',
-                        help="Utilize slab defense --> Anomaly detector=interesection with L2 defense")
-    parser.add_argument('--dataset', default='german',
-                        help="Specify dataset file name")
-    parser.add_argument('--percentile', default=90,
-                        help="percentage of data to keep in feasible set")
-    parser.add_argument('--epsilon', default=0.5,
-                        help="partial of number of datapoints as number of poisened points to create")
-    parser.add_argument('--lamb', default=1.,
-                        help="adversarial loss lambda")
-    parser.add_argument('--weight_decay', default=0.09,
-                        help="Specify weight decay for regularization")
-    parser.add_argument('--step_size', default=0.1)
-
-    parser.add_argument('--no_LP', action="store_true",
-                        help="Don't use LP rounding")
-    parser.add_argument('--timed', action="store_true",
-                        help="Activated timed")
-    parser.add_argument('--sensitive_feature_idx', default=0,
-                        help="Sensitive group feature index in data")
-    parser.add_argument('--method', default="IAF",
-                        help="specify attack method out of 'IAF', 'RAA', 'NRAA', 'Koh' ")
-    parser.add_argument('--sensitive_attr_filename', help="Specify filename of group label file",
-                        default='german_group_label.npz')
-    parser.add_argument('--stop_after', default='2',
-                        help='Specify after how many iterations without improving the attack should stop')
-    parser.add_argument('--batch_size', default=1,
-                        help="Specify batch size (Note: in the current implementation no mini-batch training is used. This is leftover for use in possible extensions")
-
-    parser.add_argument('--eval_mode', default=False,
-                        help="Evaluation or training mode")
-    parser.add_argument('--iter_to_load', default=0,
-                        help="Number of the interation of the checkpoint to load")
-    parser.add_argument('--stopping_method', default='Accuracy',
-                        help="The metric on which the early stopping is based. Fairness metrics or the test accuracy.")
-    parser.add_argument('--log_metrics', default=False,
-                        help="Log metrics for training one model, and export them as .json")
-    parser.add_argument('--display_iter_time', default=False,
-                        help="Print time required to run training iteration")
-
-    args = parser.parse_args()
-
-    dataset_name = args.dataset
-    use_slab = args.use_slab
-    epsilon = float(args.epsilon)
-    step_size = float(args.step_size)
-    percentile = int(np.round(float(args.percentile)))
-    total_grad_iter = int(np.round(float(args.total_grad_iter)))
-    no_LP = args.no_LP
-    timed = args.timed
-    attack_method = args.method
-    print('ATTACK METHOD', attack_method)
-    sensitive_idx = int(args.sensitive_feature_idx)
-    sensitive_file = args.sensitive_attr_filename
-    lamb = float(args.lamb)
-    weight_decay = float(args.weight_decay)
-    stop_after = int(args.stop_after)
-    batch_size = int(args.batch_size)
-    eval_mode = bool(args.eval_mode)
-    stopping_method = str(args.stopping_method)
-    log_metrics = bool(args.log_metrics)
-    display_iter_time = bool(args.display_iter_time)
-    output_root = os.path.join(datasets.OUTPUT_FOLDER,
-                               dataset_name, 'influence_data')
+    # Make sure the variables have the correc type. If the arguments are taken from the command line,
+    # they will be string and will need to be converted.
+    epsilon = float(epsilon)
+    step_size = float(step_size)
+    percentile = int(np.round(float(percentile)))
+    total_grad_iter = int(np.round(float(total_grad_iter)))
+    print('ATTACK METHOD', method)
+    sensitive_idx = int(sensitive_feature_idx)
+    sensitive_file = f"{dataset}_group_label.npz"
+    lamb = float(lamb)
+    weight_decay = float(weight_decay)
+    stop_after = int(stop_after)
+    batch_size = int(batch_size)
+    eval_mode = bool(eval_mode)
+    log_metrics = bool(log_metrics)
+    display_iter_time = bool(display_iter_time)
+    output_root = os.path.join(datasets.OUTPUT_FOLDER, dataset, 'influence_data')
     datasets.safe_makedirs(output_root)
 
     print('EVAL MODE IS ', eval_mode)
-    if(attack_method == "IAF"):
+    if(method == "IAF"):
         loss_type = 'adversarial_loss'
-    elif(attack_method == "Koh"):
+    elif(method == "Koh"):
         loss_type = 'adversarial_loss'
         lamb = 0
     else:
@@ -123,7 +91,7 @@ def main():
     use_LP = False if no_LP else True  # Use LP rounding
     num_classes = 2  # Only binary classification possible
 
-    model_name = str(dataset_name) + '_' + str(attack_method) + '_' + \
+    model_name = str(dataset) + '_' + str(method) + '_' + \
         str(epsilon) + '_' + str(lamb) + '_' + str(stopping_method)
 
     if no_LP:
@@ -131,7 +99,7 @@ def main():
     if timed:
         model_name = model_name + '_timed'
 
-    X_train, Y_train, X_test, Y_test = datasets.load_dataset(dataset_name)
+    X_train, Y_train, X_test, Y_test = datasets.load_dataset(dataset)
 
     general_train_idx = X_train.shape[0]
 
@@ -160,7 +128,7 @@ def main():
             feasible_flipped_mask,
             general_train_idx,
             sensitive_file,
-            attack_method,
+            method,
             use_copy=use_copy)
 
     tf.compat.v1.reset_default_graph()
@@ -171,7 +139,7 @@ def main():
     advantaged_group_selector = None
     disadvantaged_group_selector = None
 
-    if attack_method == "Solans":
+    if method == "Solans":
         disadvantaged = -1 * advantaged
 
         advantaged_group_selector = np.where(
@@ -206,7 +174,7 @@ def main():
         train_dir=output_root,
         log_dir='log',
         model_name=model_name,
-        method=attack_method,
+        method=method,
         general_train_idx=general_train_idx,
         sensitive_file=sensitive_file,
         lamb=lamb,
@@ -223,7 +191,7 @@ def main():
         model.checkpoint_file = os.path.join(
             model.train_dir, "%s-checkpoint" % model_name)
         print('MODEL CHECKPOINT NAME \n', model.checkpoint_file)
-        results = model.load_checkpoint(int(args.iter_to_load), do_checks=True)
+        results = model.load_checkpoint(int(iter_to_load), do_checks=True)
         print(results)
         return results
 
@@ -251,7 +219,7 @@ def main():
             model,
             general_train_idx,
             sensitive_file,
-            attack_method,
+            method,
             advantaged,
             indices_to_poison=indices_to_poison,
             test_idx=None,
@@ -270,4 +238,51 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--total_grad_iter', default=300,
+                        help="Maximum number of attack gradient iterations for the attack")
+    parser.add_argument('--use_slab', action='store_true',
+                        help="Utilize slab defense --> Anomaly detector=interesection with L2 defense")
+    parser.add_argument('--dataset', default='german',
+                        help="Specify dataset file name")
+    parser.add_argument('--percentile', default=90,
+                        help="percentage of data to keep in feasible set")
+    parser.add_argument('--epsilon', default=0.5,
+                        help="partial of number of datapoints as number of poisened points to create")
+    parser.add_argument('--lamb', default=1.,
+                        help="adversarial loss lambda")
+    parser.add_argument('--weight_decay', default=0.09,
+                        help="Specify weight decay for regularization")
+    parser.add_argument('--step_size', default=0.1)
+
+    parser.add_argument('--no_LP', action="store_true",
+                        help="Don't use LP rounding")
+    parser.add_argument('--timed', action="store_true",
+                        help="Activated timed")
+    parser.add_argument('--sensitive_feature_idx', default=0,
+                        help="Sensitive group feature index in data")
+    parser.add_argument('--method', default="IAF",
+                        help="specify attack method out of 'IAF', 'RAA', 'NRAA', 'Koh' ")
+    parser.add_argument('--stop_after', default='2',
+                        help='Specify after how many iterations without improving the attack should stop')
+    parser.add_argument('--batch_size', default=1,
+                        help="Specify batch size (Note: in the current implementation no mini-batch training is used. This is leftover for use in possible extensions")
+
+    parser.add_argument('--eval_mode', default=False,
+                        help="Evaluation or training mode")
+    parser.add_argument('--iter_to_load', default=0,
+                        help="Number of the interation of the checkpoint to load")
+    parser.add_argument('--stopping_method', default='Accuracy',
+                        help="The metric on which the early stopping is based. Fairness metrics or the test accuracy.")
+    parser.add_argument('--log_metrics', default=False,
+                        help="Log metrics for training one model, and export them as .json")
+    parser.add_argument('--display_iter_time', default=False,
+                        help="Print time required to run training iteration")
+
+    args = parser.parse_args()
+
+    run_attack(args)
+    
+
