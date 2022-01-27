@@ -100,6 +100,10 @@ def run_attack(
         model_name = model_name + '_no-LP'
     if timed:
         model_name = model_name + '_timed'
+    if epsilon == 0.0:
+        model_name = str(dataset) + '_no_attack'
+
+    print(model_name)
 
     X_train, Y_train, X_test, Y_test = datasets.load_dataset(dataset)
 
@@ -118,6 +122,7 @@ def run_attack(
     disadvantaged_group_selector = np.zeros(1)
 
     if epsilon > 0:
+        print(epsilon)
         class_map, centroids, centroid_vec, sphere_radii, slab_radii = data.get_data_params(
             X_train, Y_train, percentile=percentile)
 
