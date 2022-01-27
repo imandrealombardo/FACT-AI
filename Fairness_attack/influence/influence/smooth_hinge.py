@@ -197,6 +197,7 @@ class SmoothHinge(GenericNeuralNet):
                 json.dump(data, f)
         # Check whether to save checkpoints
         if save_checkpoints:
+            print("===== checkpoint name :", self.checkpoint_file)
             # Saving checkpoints depending on the stopping metric.
             if(self.stopping_method == 'Parity'):
                 if(E0 + Parity > self.max_fairness):
