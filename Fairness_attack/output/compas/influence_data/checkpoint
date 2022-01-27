@@ -1,0 +1,2 @@
+model_checkpoint_path: "compas_Solans_0.5_0.6_Parity-checkpoint"
+all_model_checkpoint_paths: "compas_Solans_0.5_0.6_Parity-checkpoint"
