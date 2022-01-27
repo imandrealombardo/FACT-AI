@@ -76,7 +76,6 @@ def poison_with_influence_proj_gradient_step(model, general_train_idx,
                 gender_labels[k] = 1
             elif(k in female_train_index):
                 gender_labels[k] = -1
-        random.seed(0)
 
         if(advantaged == -1):
             op_indx = np.where((train_dataset.labels == -1)
@@ -86,6 +85,10 @@ def poison_with_influence_proj_gradient_step(model, general_train_idx,
                                & (gender_labels == 1))[0]
 
         rand1 = random.randint(0, op_indx.shape[0] - 1)
+
+        print("Hello\n" * 3)
+        print(rand1)
+
         poisoned_X_train[0] = train_dataset.x[op_indx[rand1], :]
 
         if(advantaged == -1):
@@ -119,7 +122,6 @@ def poison_with_influence_proj_gradient_step(model, general_train_idx,
                 gender_labels[k] = 1
             elif(k in female_train_index):
                 gender_labels[k] = -1
-        random.seed(0)
 
         if(advantaged == -1):
             op_indx = np.where((train_dataset.labels == -1)
@@ -203,8 +205,7 @@ def iterative_attack(
         copy_start = indices_to_poison[1] + 1
         assert np.all(
             model.train_dataset.labels[copy_start:copy_start + num_copies[0]] == 1)
-        assert np.all(model.train_dataset.labels[copy_start + num_copies[0]
-                      :copy_start + num_copies[0] + num_copies[1]] == -1)
+        assert np.all(model.train_dataset.labels[copy_start + num_copies[0]:copy_start + num_copies[0] + num_copies[1]] == -1)
 
     largest_test_loss = 0
     largest_parity = 0
@@ -308,7 +309,7 @@ def iterative_attack(
 
         if ((attack_iter + 1) % 10 == 0) or (attack_iter == num_iter - 1):
             print('in')
-            if(stopping_method=='Accuracy'):
+            if(stopping_method == 'Accuracy'):
                 # Calculate test loss
                 test_loss = results['test_loss']
                 if largest_test_loss < test_loss:
@@ -327,12 +328,12 @@ def iterative_attack(
                              times_taken=times_taken,
                              nums_copies=nums_copies)
 
-            if(stopping_method=='Parity'):
+            if(stopping_method == 'Parity'):
                 # Calculate test loss
                 E0, Parity = results['E0'], results['Parity']
-                if largest_parity < E0+Parity:
+                if largest_parity < E0 + Parity:
                     print('parity match')
-                    largest_parity = E0+Parity
+                    largest_parity = E0 + Parity
                     np.savez(os.path.join(output_root, '%s_attack' % (model.model_name)),
                              poisoned_X_train=poisoned_X_train,
                              Y_train=model.train_dataset.labels,
@@ -353,7 +354,8 @@ def iterative_attack(
                 print('TOTAL ELAPSED TIME FOR ONE ITERATION \n', total_time)
 
             if stop_counter >= stop_after:
-                print('STOPPING METHOD USED IS: ', stopping_method, ' STOPPING NOW')
+                print('STOPPING METHOD USED IS: ',
+                      stopping_method, ' STOPPING NOW')
                 break
     if start_time is not None:
         np.savez(os.path.join(output_root, '%s_timing' % (model.model_name)),
