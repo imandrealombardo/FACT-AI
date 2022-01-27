@@ -75,7 +75,7 @@ def run_attack(
     datasets.safe_makedirs(output_root)
 
     print('EVAL MODE IS ', eval_mode)
-    if(method == "IAF"):
+    if(method == "IAF" or method == "Solans"):
         loss_type = 'adversarial_loss'
     elif(method == "Koh"):
         loss_type = 'adversarial_loss'
