@@ -18,26 +18,27 @@ from influence.influence.dataset import DataSet
 
 import tensorflow as tf
 
+
 def run_attack(
-    total_grad_iter = 300,
-    use_slab = False,
-    dataset = "german",
-    percentile = 90,
-    epsilon = 0.5,
-    lamb = 1,
-    weight_decay = 0.09,
-    step_size = 0.1,
-    no_LP = False,
-    timed = False,
-    sensitive_feature_idx = 0,
-    method = "IAF",
-    stop_after = 2,
-    batch_size = 1,
-    eval_mode = False,
-    iter_to_load = 0,
-    stopping_method = 'Accuracy',
-    log_metrics = False,
-    display_iter_time = False):
+        total_grad_iter=300,
+        use_slab=False,
+        dataset="german",
+        percentile=90,
+        epsilon=0.5,
+        lamb=1,
+        weight_decay=0.09,
+        step_size=0.1,
+        no_LP=False,
+        timed=False,
+        sensitive_feature_idx=0,
+        method="IAF",
+        stop_after=2,
+        batch_size=1,
+        eval_mode=False,
+        iter_to_load=0,
+        stopping_method='Accuracy',
+        log_metrics=False,
+        display_iter_time=False):
 
     def get_projection_fn_for_dataset(X, Y, use_slab, use_LP, percentile):
         projection_fn = data.get_projection_fn(
@@ -69,7 +70,8 @@ def run_attack(
     eval_mode = bool(eval_mode)
     log_metrics = bool(log_metrics)
     display_iter_time = bool(display_iter_time)
-    output_root = os.path.join(datasets.OUTPUT_FOLDER, dataset, 'influence_data')
+    output_root = os.path.join(
+        datasets.OUTPUT_FOLDER, dataset, 'influence_data')
     datasets.safe_makedirs(output_root)
 
     print('EVAL MODE IS ', eval_mode)
@@ -109,6 +111,12 @@ def run_attack(
         X_test = X_test.toarray()
 
     advantaged = 1
+
+    # Only needed for Solans
+    p_over_m = 1
+    advantaged_group_selector = np.zeros(1)
+    disadvantaged_group_selector = np.zeros(1)
+
     if epsilon > 0:
         class_map, centroids, centroid_vec, sphere_radii, slab_radii = data.get_data_params(
             X_train, Y_train, percentile=percentile)
@@ -131,24 +139,20 @@ def run_attack(
             method,
             use_copy=use_copy)
 
+        if method == "Solans":
+            disadvantaged = -1 * advantaged
+
+            advantaged_group_selector = np.where(
+                test_gender_labels == advantaged)[0]
+            disadvantaged_group_selector = np.where(
+                test_gender_labels == disadvantaged)[0]
+
+            p_over_m = len(disadvantaged_group_selector) / \
+                len(advantaged_group_selector)
+
     tf.compat.v1.reset_default_graph()
 
     # Only used in Solans attack
-
-    p_over_m = None
-    advantaged_group_selector = None
-    disadvantaged_group_selector = None
-
-    if method == "Solans":
-        disadvantaged = -1 * advantaged
-
-        advantaged_group_selector = np.where(
-            test_gender_labels == advantaged)[0]
-        disadvantaged_group_selector = np.where(
-            test_gender_labels == disadvantaged)[0]
-
-        p_over_m = len(disadvantaged_group_selector) / \
-            len(advantaged_group_selector)
 
     input_dim = X_train.shape[1]
     train = DataSet(X_modified, Y_modified) if epsilon != 0.0 else DataSet(
@@ -283,5 +287,3 @@ if __name__ == "__main__":
     args = parser.parse_args().__dict__
 
     run_attack(**args)
-    
-
