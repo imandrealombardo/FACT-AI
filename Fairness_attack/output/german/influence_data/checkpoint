@@ -1,2 +1,2 @@
-model_checkpoint_path: "german_IAF_0.5_0.4_Accuracy-checkpoint"
-all_model_checkpoint_paths: "german_IAF_0.5_0.4_Accuracy-checkpoint"
+model_checkpoint_path: "german_IAF_0.5_0.7_Accuracy-checkpoint"
+all_model_checkpoint_paths: "german_IAF_0.5_0.7_Accuracy-checkpoint"
