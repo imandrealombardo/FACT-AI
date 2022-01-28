@@ -1,2 +1,2 @@
-model_checkpoint_path: "german_no_attack-checkpoint"
-all_model_checkpoint_paths: "german_no_attack-checkpoint"
+model_checkpoint_path: "german_Solans_1.0_1.0_Accuracy-checkpoint"
+all_model_checkpoint_paths: "german_Solans_1.0_1.0_Accuracy-checkpoint"
