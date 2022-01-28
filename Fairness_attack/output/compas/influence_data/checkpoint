@@ -1,2 +1,2 @@
-model_checkpoint_path: "compas_IAF_0.5_1.0_Accuracy-checkpoint"
-all_model_checkpoint_paths: "compas_IAF_0.5_1.0_Accuracy-checkpoint"
+model_checkpoint_path: "compas_NRAA_1.0_1.0_Parity-checkpoint"
+all_model_checkpoint_paths: "compas_NRAA_1.0_1.0_Parity-checkpoint"
