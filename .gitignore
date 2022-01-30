@@ -128,3 +128,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Ignore changes of the pre-trained models
+/Fairness_attack/output
