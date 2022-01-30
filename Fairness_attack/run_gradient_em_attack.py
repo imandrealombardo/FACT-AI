@@ -265,7 +265,6 @@ if __name__ == "__main__":
     parser.add_argument('--weight_decay', default=0.09,
                         help="Specify weight decay for regularization")
     parser.add_argument('--step_size', default=0.1)
-
     parser.add_argument('--no_LP', action="store_true",
                         help="Don't use LP rounding")
     parser.add_argument('--timed', action="store_true",
@@ -283,7 +282,7 @@ if __name__ == "__main__":
     parser.add_argument('--iter_to_load', default=0,
                         help="Number of the interation of the checkpoint to load")
     parser.add_argument('--stopping_method', default='Accuracy',
-                        help="The metric on which the early stopping is based. Fairness metrics or the test accuracy.")
+                        help="The metric on which the early stopping is based. Choose between 'Accuracy' and 'Fairness'.")
     parser.add_argument('--log_metrics', default=False,
                         help="Log metrics for training one model, and export them as .json")
     parser.add_argument('--display_iter_time', default=False,

@@ -2,7 +2,7 @@ import os
 
 datasets = ["compas", "german", "drug"]
 attacks =  ["IAF", "RAA", "NRAA", "Koh", "Solans"]
-stopping_methods = ["Parity", "Accuracy"]
+stopping_methods = ["Fairness", "Accuracy"]
 
 # ================= To replicate Figure 2 of the original paper: ================= 
 

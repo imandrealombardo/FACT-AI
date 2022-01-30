@@ -328,7 +328,7 @@ def iterative_attack(
                              times_taken=times_taken,
                              nums_copies=nums_copies)
 
-            if(stopping_method == 'Parity'):
+            if(stopping_method == 'Fairness'):
                 # Calculate test loss
                 E0, Parity = results['E0'], results['Parity']
                 if largest_parity < E0 + Parity:
