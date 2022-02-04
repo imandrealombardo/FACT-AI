@@ -25,7 +25,7 @@ def poison_with_influence_proj_gradient_step(model, general_train_idx,
                                              output_root=None):
     """
     Returns poisoned_X_train, a subset of model.train_dataset (marked by indices_to_poison)
-    that has been modified by a single gradient step.
+    that has been modified by a attack iteration step.
     """
     train_dataset = model.train_dataset
     validation_dataset = model.validation_dataset
@@ -192,7 +192,29 @@ def iterative_attack(
         start_time=None,
         display_iter_time=False,
         stopping_method='Accuracy'):
+    """
+    Performs the main specified adversarial attack
 
+    :param model: Model to attack
+    :general_train_idx: Index of last element in the training data
+    :sensitive_file: File specifiying the sensitive group labels (dataset_group_label)
+    :attack_method: Used attack method
+    :advantaged: Index of advantaged group (1 or -1)
+    :indices_to_poison: Indeces to be poisoned
+    :test_idx: Depricated
+    :test_description: Depricated
+    :step_size: Step size for attacks with adversarial loss
+    :num_iter: Maximum number of attack iterations
+    :loss_type: Loss type for different attacks. (adversarial_loss when one is used else normal_loss)
+    :projection_fn: Projection function to project updated poisoned points to feasible set
+    :output_root: Output root directory
+    :num_copies: Number of copies to make for poisoned points
+    :stop_after: Patience for stopping training
+    :start_time: Start time of training
+    :display_iter_time: Print time of every iteration if true
+    :stopping_method: Method to evaluate best model
+
+    """
     if num_copies is not None:
         assert len(num_copies) == 2
         assert np.min(num_copies) >= 1
@@ -417,6 +439,26 @@ def init_gradient_attack_from_mask(
         sensitive_file,
         attack_method,
         use_copy=True):
+   """
+   Calculates the advantaged group and computes initial poisoned data points and adds them to the training data.
+
+   :param X_train: training set features
+   :param Y_train: training set labels
+   :param epsilon: controlling parameter specifiying number of poisoned points to be copied such that n_poisoned = eps len(X_train)
+   :param feasible_flipped_mask: Mask of feasible set
+   :param general_train_idx: Index of last element in X_train
+   :param sensitive_file: File specifying labels of the sensitive feature
+   :param attack_method: Method of attack
+   :param use_copy: Make copies of poisoned points if true, otherwise only one point per label gets sampled
+
+   :return:
+            - X_modified: X_train with added poisoned points
+            - Y_modified: Y_train with added poisoned points
+            - indices_to_poison: Indices of poisonoed datapoints
+            - copy_array: Array specifiying number of copies of poisoned datapoints [num_pos_copies, num_neg_copies]
+            - advantaged: Label of advantaged group
+            - test_gender_labels: Sensitive feature labels (1, -1) of test_set (needed for Solans)
+   """
 
     DATA_FOLDER = './data'
     dataset_path = os.path.join(DATA_FOLDER)

@@ -20,10 +20,10 @@ from tensorflow.compat.v1.keras import backend as K
 from .hessians import hessian_vector_product
 from .dataset import DataSet
 
-def reset_random_seeds():
-   os.environ['PYTHONHASHSEED']=str(2)
-   tf.random.set_seed(2)
-   np.random.seed(2)
+def reset_random_seeds(seed):
+   os.environ['PYTHONHASHSEED']=str(seed*2)
+   tf.random.set_seed(seed*2)
+   np.random.seed(seed*2)
 
 def variable(name, shape, initializer):
     dtype = tf.float32
@@ -64,11 +64,12 @@ def variable_with_weight_decay(name, shape, stddev, wd):
 
 class GenericNeuralNet(object):
     """
-    Multi-class classification.
+    Framework for the classification model.
     """
 
     def __init__(self, **kwargs):
-        reset_random_seeds()
+        self.seed =kwargs.pop('seed')
+        reset_random_seeds(self.seed)
         
         self.batch_size = kwargs.pop('batch_size')
         self.train_dataset = kwargs.pop('train_dataset')
@@ -140,6 +141,7 @@ class GenericNeuralNet(object):
         self.learning_rate_placeholder = tf.compat.v1.placeholder(tf.float32)
         self.update_learning_rate_op = tf.compat.v1.assign(self.learning_rate, self.learning_rate_placeholder)
         
+        # some leftover parameters. Left for easier extension
         self.train_op = self.get_train_op(self.total_loss, self.global_step, self.learning_rate)
         self.train_sgd_op = self.get_train_sgd_op(self.total_loss, self.global_step, self.learning_rate)
         self.accuracy_op = self.get_accuracy_op(self.logits, self.labels_placeholder)        

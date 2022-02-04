@@ -21,7 +21,7 @@ import tensorflow as tf
 
 def run_attack(
         total_grad_iter=300,
-        use_slab=False,
+        use_slab=True,
         dataset="german",
         percentile=90,
         epsilon=0.5,
@@ -38,7 +38,30 @@ def run_attack(
         iter_to_load=0,
         stopping_method='Accuracy',
         log_metrics=False,
-        display_iter_time=False):
+        display_iter_time=False,
+        seed=1):
+    """
+    :param total_grad_iter: Number of maximum iterations of the attack
+    :param use_slab: Use the intersection between the L2 and the slab defense
+    :param dataset: Name of the dataset
+    :param percentile: Percentage of data kept in the feasible set
+    :param epsilon: Ratio that defines the number of poisoned datapoints as epsilon * len(dataset.train),
+    :param lamb=: Ratio of adversarial loss for IAF attack (l_accuracy + lamb * l_fairness)
+    :param weight_decay: Amount of weight_decay in SVM training
+    :param step_size: Step size for gradient update of poisoned points (IAF, Koh, Solans)
+    :param no_LP: Don't use LP rounding
+    :param timed: Time the attack iterations
+    :param sensitive_feature_idx: Index in dataset for sensitive feature,
+    :param method: Attacking method; valid options: 'IAF', 'RAA', 'NRAA', 'Koh', 'Solans'
+    :param stop_after: Patience for stopping training
+    :param batch_size: Training batch size (currently not used)
+    :param eval_mode: Activate eval mode (no training)
+    :param iter_to_load: not used (can be edited to load specific checkpoint itertions)
+    :param stopping_method: Metric to evaluate best model during training; valid options: 'Accuracy', 'Fairness'
+    :param log_metrics: Save logging of accuracy and fariness metrics average during training in json. file
+    :param display_iter_time: Print time of each iteration
+    :param seed: random seed
+    """
 
     def get_projection_fn_for_dataset(X, Y, use_slab, use_LP, percentile):
         projection_fn = data.get_projection_fn(
@@ -52,10 +75,9 @@ def run_attack(
 
         return projection_fn
 
-    np.random.seed(1)
-
     # Make sure the variables have the correc type. If the arguments are taken from the command line,
     # they will be string and will need to be converted.
+    seed = int(seed)
     epsilon = float(epsilon)
     step_size = float(step_size)
     percentile = int(np.round(float(percentile)))
@@ -72,6 +94,8 @@ def run_attack(
     display_iter_time = bool(display_iter_time)
     output_root = os.path.join(
         datasets.OUTPUT_FOLDER, dataset, 'influence_data')
+
+    np.random.seed(seed)
     datasets.safe_makedirs(output_root)
 
     print('EVAL MODE IS ', eval_mode)
@@ -90,6 +114,7 @@ def run_attack(
     initial_learning_rate = 0.001
     temp = 0.001  # Delta for smooth hinge loss
     use_copy = True  # Copy the poisened points to get the specified amount given by epsilon
+    use_slab = True  # Use intersection between slab and L2 defense (always on)
     use_LP = False if no_LP else True  # Use LP rounding
     num_classes = 2  # Only binary classification possible
 
@@ -116,7 +141,7 @@ def run_attack(
 
     advantaged = 1
 
-    # Only needed for Solans
+    # Some things only needed for Solans
     p_over_m = 1
     advantaged_group_selector = np.zeros(1)
     disadvantaged_group_selector = np.zeros(1)
@@ -147,19 +172,20 @@ def run_attack(
         if method == "Solans":
             disadvantaged = -1 * advantaged
 
+            # compute indices for advantaged and disadvantaged group
             advantaged_group_selector = np.where(
                 test_gender_labels == advantaged)[0]
             disadvantaged_group_selector = np.where(
                 test_gender_labels == disadvantaged)[0]
 
+            # compute ratio of advantaged and disadvantaged group count
             p_over_m = len(disadvantaged_group_selector) / \
                 len(advantaged_group_selector)
 
     tf.compat.v1.reset_default_graph()
 
-    # Only used in Solans attack
-
     input_dim = X_train.shape[1]
+    # Datasets include initial poisoned points if an attack is used
     train = DataSet(X_modified, Y_modified) if epsilon != 0.0 else DataSet(
         X_train, Y_train)
     validation = None
@@ -190,6 +216,7 @@ def run_attack(
         p_over_m=p_over_m,
         advantaged_group_selector=advantaged_group_selector,
         disadvantaged_group_selector=disadvantaged_group_selector,
+        seed=seed,
         eval_mode=eval_mode,
         stopping_method=stopping_method,
         log_metrics=log_metrics,
@@ -252,8 +279,6 @@ if __name__ == "__main__":
 
     parser.add_argument('--total_grad_iter', default=300,
                         help="Maximum number of attack gradient iterations for the attack")
-    parser.add_argument('--use_slab', action='store_true',
-                        help="Utilize slab defense --> Anomaly detector=interesection with L2 defense")
     parser.add_argument('--dataset', default='german',
                         help="Specify dataset file name")
     parser.add_argument('--percentile', default=90,
@@ -287,6 +312,7 @@ if __name__ == "__main__":
                         help="Log metrics for training one model, and export them as .json")
     parser.add_argument('--display_iter_time', default=False,
                         help="Print time required to run training iteration")
+    parser.add_argument('--seed', default=1, help='Specify random seed')
 
     args = parser.parse_args().__dict__
 
