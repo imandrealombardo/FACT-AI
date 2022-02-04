@@ -439,26 +439,26 @@ def init_gradient_attack_from_mask(
         sensitive_file,
         attack_method,
         use_copy=True):
-   """
-   Calculates the advantaged group and computes initial poisoned data points and adds them to the training data.
+    """
+    Calculates the advantaged group and computes initial poisoned data points and adds them to the training data.
 
-   :param X_train: training set features
-   :param Y_train: training set labels
-   :param epsilon: controlling parameter specifiying number of poisoned points to be copied such that n_poisoned = eps len(X_train)
-   :param feasible_flipped_mask: Mask of feasible set
-   :param general_train_idx: Index of last element in X_train
-   :param sensitive_file: File specifying labels of the sensitive feature
-   :param attack_method: Method of attack
-   :param use_copy: Make copies of poisoned points if true, otherwise only one point per label gets sampled
+    :param X_train: training set features
+    :param Y_train: training set labels
+    :param epsilon: controlling parameter specifiying number of poisoned points to be copied such that n_poisoned = eps len(X_train)
+    :param feasible_flipped_mask: Mask of feasible set
+    :param general_train_idx: Index of last element in X_train
+    :param sensitive_file: File specifying labels of the sensitive feature
+    :param attack_method: Method of attack
+    :param use_copy: Make copies of poisoned points if true, otherwise only one point per label gets sampled
 
-   :return:
+    :return:
             - X_modified: X_train with added poisoned points
             - Y_modified: Y_train with added poisoned points
             - indices_to_poison: Indices of poisonoed datapoints
             - copy_array: Array specifiying number of copies of poisoned datapoints [num_pos_copies, num_neg_copies]
             - advantaged: Label of advantaged group
             - test_gender_labels: Sensitive feature labels (1, -1) of test_set (needed for Solans)
-   """
+    """
 
     DATA_FOLDER = './data'
     dataset_path = os.path.join(DATA_FOLDER)
