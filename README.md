@@ -51,7 +51,7 @@ To get information on all arguments you are able to run ```python run_gradient_e
 
 Run the following commands to use the different attacks on the 'german' dataset with a particular set of hyperparameters.
 
-Note: The sensitive_feature_idx is set to be 0 by are preprocessing for all three datasets.
+Note: The sensitive_feature_idx is set to be 0 by our preprocessing for all three datasets.
 
 To run the influence attack on fairness (IAF):
 ```bash
