@@ -80,13 +80,13 @@ python run_gradient_em_attack.py --total_grad_iter 10000 --dataset german --epsi
 
 ## Eval mode
 
-To evaluate a trained model simply pass ```bash --eval_mode True```
+To evaluate a trained model simply pass ``` --eval_mode True ```
 One specifies which model to evaluate by the attack, dataset and hyperparameters used for the model.
 
 For example the following evaluates the model which used the 'IAF' attack, was trained on the 'german' dataset with 'epsilon = 0.2' 'lamb = 1' and uses accuracy as the stopping method:
 
 ```bash
-python run_gradient_em_attack.py --dataset german --epsilon 0.2 --method IAF --sensitive_feature_idx 0 --lamb 1 --stopping_method Accuracy
+python run_gradient_em_attack.py --eval_mode True --dataset german --epsilon 0.2 --method IAF --sensitive_feature_idx 0 --lamb 1 --stopping_method Accuracy
 ```
 
 
