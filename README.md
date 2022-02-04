@@ -1,5 +1,5 @@
 # Reproducibility of Exacerbating Algorithmic Bias through Fairness Attacks
-This repository contains code for reproducing the experiments in the [Exacerbating Algorithmic Bias through Fairness Attacks](https://arxiv.org/pdf/2012.08723.pdf) paper as part of the [Machine Learning Reproducibility Challenge] (https://paperswithcode.com/rc2021).
+This repository contains code for reproducing the experiments in the [Exacerbating Algorithmic Bias through Fairness Attacks](https://arxiv.org/pdf/2012.08723.pdf) paper as part of the [Machine Learning Reproducibility Challenge](https://paperswithcode.com/rc2021).
 Please cite the original paper if you find this useful:
 ```
 @article{mehrabi2020exacerbating,
@@ -33,10 +33,10 @@ To retrain all these models from scratch simply run 'run_experiments.py'
 ## Data preprocessing
 
 The three datasets (german, compas, drug) used for the experiments are available in 'Custom_data_preprocessing' downloaded from source.
-Running the according data processing scripts creates a datasetname_data.npz and a datasetname_group_label.npz file in 'Fairness_attack/data'
+Running the according data processing scripts creates a 'datasetname_data.npz' and a 'datasetname_group_label.npz' file in 'Fairness_attack/data'
 
-The datasetname_data.npz file contains the full training and test data.
-The datasetname_group_label.npz file contains the labels of the sensitive feature (0,1) for all datapoints. In case of our experiments 0=male 1=female
+The 'datasetname_data.npz' file contains the full training and test data. <br/>
+The 'datasetname_group_label.npz' file contains the labels of the sensitive feature (0,1) for all datapoints. In case of our experiments 0=male 1=female
 
 Running these scripts is not necessary since the processed data is already given in the repository.
 The scripts are given to provide easy access to the preprocessing to be adapted to other datasets.
@@ -45,16 +45,15 @@ To use different datasets the files have to be placed in the same way in the 'Fa
 
 ## Run attacks
 
-To get information on all arguments you are able to pass run ```bash python run_gradient_em_attack.py -h ```
+To get information on all arguments you are able to pass run ```python run_gradient_em_attack.py -h ```
 
-Example runs:
 Run the following commands to use the different attacks on the 'german' dataset with a particular set of hyperparameters.
 
 Note: The sensitive_feature_idx is set to be 0 by are preprocessing for all three datasets.
 
 To run the influence attack on fairness (IAF):
 ```bash
-python run_gradient_em_attack.py --total_grad_iter 10000 --dataset german --epsilon 0.5 --lamb 1 --method IAF --sensitive_feature_idx 0
+python run_gradient_em_attack.py --total_grad_iter 10000 --dataset german --epsilon 0.5 --lamb 1 --method IAF --sensitive_feature_idx 0 --stopping_method Accuracy
 ```
 
 To run the random anchoring attack (RAA):
@@ -64,7 +63,7 @@ python run_gradient_em_attack.py --total_grad_iter 10000 --dataset german --epsi
 
 To run the non-random anchoring attack (NRAA):
 ```bash
-python run_gradient_em_attack.py --total_grad_iter 10000 --dataset german --epsilon 0.5 --method NRAA --sensitive_feature_idx 0
+python run_gradient_em_attack.py --total_grad_iter 10000 --dataset german --epsilon 0.5 --method NRAA --sensitive_feature_idx 0 --stopping_method Accuracy
 ```
 
 To run the Koh baseline:
@@ -74,7 +73,7 @@ python run_gradient_em_attack.py --total_grad_iter 10000 --dataset german --epsi
 
 To run the Solans baseline:
 ```bash
-python run_gradient_em_attack.py --total_grad_iter 10000 --dataset german --epsilon 0.5 --method Solans --sensitive_feature_idx 0
+python run_gradient_em_attack.py --total_grad_iter 10000 --dataset german --epsilon 0.5 --method Solans --sensitive_feature_idx 0 --stopping_method Accuracy
 ```
 
 ## Eval mode
@@ -82,7 +81,7 @@ python run_gradient_em_attack.py --total_grad_iter 10000 --dataset german --epsi
 To evaluate a trained model simply pass ```bash --eval_mode True```
 One specifies which model to evaluate by the attack, dataset and hyperparameters used for the model.
 
-For example the following evaluates the model which used the 'IAF' attack, was trained on the 'german' dataset with 'epsilon = 0.2' 'lamb = 1' and accuracy as the stopping method:
+For example the following evaluates the model which used the 'IAF' attack, was trained on the 'german' dataset with 'epsilon = 0.2' 'lamb = 1' and uses accuracy as the stopping method:
 
 ```bash
 python run_gradient_em_attack.py --dataset german --epsilon 0.2 --method IAF --sensitive_feature_idx 0 --lamb 1 --stopping_method Accuracy
