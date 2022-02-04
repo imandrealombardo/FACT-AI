@@ -93,7 +93,7 @@ python run_gradient_em_attack.py --eval_mode True --dataset german --epsilon 0.2
 
 # References
 
-This code builds upon the [implemenation](https://github.com/Ninarehm/attack) developed by Mehrabi et al. thus please cite:
+This code builds upon the [implementation](https://github.com/Ninarehm/attack) developed by Mehrabi et al. thus please cite:
 
 ```
 @article{mehrabi2020exacerbating,
