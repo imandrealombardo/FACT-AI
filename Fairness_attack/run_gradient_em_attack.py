@@ -278,26 +278,27 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--total_grad_iter', default=300,
-                        help="Maximum number of attack gradient iterations for the attack")
+                        help="Maximum number of attack iterations")
     parser.add_argument('--dataset', default='german',
                         help="Specify dataset file name")
     parser.add_argument('--percentile', default=90,
-                        help="percentage of data to keep in feasible set")
+                        help="Percentage of data to keep in feasible set")
     parser.add_argument('--epsilon', default=0.5,
-                        help="partial of number of datapoints as number of poisened points to create")
+                        help="Partial of number of datapoints in training set as number of poisoned points to create (i.e. n_poisoned = epsilon*len(training_data)")
     parser.add_argument('--lamb', default=1.,
-                        help="adversarial loss lambda")
+                        help="Adversarial loss lambda (IAF) controlling trade off between accuracy and fairness")
     parser.add_argument('--weight_decay', default=0.09,
                         help="Specify weight decay for regularization")
-    parser.add_argument('--step_size', default=0.1)
+    parser.add_argument('--step_size', default=0.1,
+                        help="Step size for poisoned point update using adversarial loss")
     parser.add_argument('--no_LP', action="store_true",
                         help="Don't use LP rounding")
     parser.add_argument('--timed', action="store_true",
-                        help="Activated timed")
+                        help="Activate timed")
     parser.add_argument('--sensitive_feature_idx', default=0,
                         help="Sensitive group feature index in data")
     parser.add_argument('--method', default="IAF",
-                        help="specify attack method out of 'IAF', 'RAA', 'NRAA', 'Koh' ")
+                        help="specify attack method out of 'IAF', 'RAA', 'NRAA', 'Koh', 'Solans'")
     parser.add_argument('--stop_after', default='2',
                         help='Specify after how many iterations without improving the attack should stop')
     parser.add_argument('--batch_size', default=1,
