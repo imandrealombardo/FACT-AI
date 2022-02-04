@@ -12,8 +12,8 @@ Please cite the original paper if you find this useful:
 
 
 # Requirements
-The code was tested using the enviroment we provide in 'f_attack_env.yml'.
-It is highly recommended to work in that enviroment by installing it using Anaconda.
+The code was tested using the environment we provide in 'f_attack_env.yml'.
+It is highly recommended to work in that environment by installing it using Anaconda.
 To do this install Anaconda and simply run
 
 ```bash
@@ -26,19 +26,19 @@ conda activate f_attack
 
 # Running Instructions
 
-To replicate all our experimental results specified in the paper by evaluating the pre-trained models run the jupyter notebook 'Results_notebook.ipynb'
+To replicate all our experimental results specified in the paper by evaluating the pre-trained models run the jupyter notebook 'Results_notebook.ipynb'.
 
 To do this don't forget to first run ```python -m ipykernel install --user --name=f_attack``` to create the necessary kernel.
 
-To retrain all these models from scratch simply run 'run_experiments.py'
+To retrain all these models from scratch simply run 'run_experiments.py'.
 
 ## Data preprocessing
 
-The three datasets (german, compas, drug) used for the experiments are available in 'Custom_data_preprocessing' downloaded from source.
-Running the according data processing scripts creates a 'datasetname_data.npz' and a 'datasetname_group_label.npz' file in 'Fairness_attack/data'
+The three datasets (german, compas, drug) used for the experiments are available in 'Custom_data_preprocessing' downloaded from the source.
+Running the according data processing scripts creates a 'datasetname_data.npz' and a 'datasetname_group_label.npz' file in 'Fairness_attack/data'.
 
 The 'datasetname_data.npz' file contains the full training and test data. <br/>
-The 'datasetname_group_label.npz' file contains the labels of the sensitive feature (0,1) for all datapoints. In case of our experiments 0=male 1=female
+The 'datasetname_group_label.npz' file contains the labels of the sensitive feature (0,1) for all data points. In the case of our experiments Male=0, Female=1.
 
 Running these scripts is not necessary since the processed data is already given in the repository.
 The scripts are given to provide easy access to the preprocessing to be adapted to other datasets.
@@ -47,7 +47,7 @@ To use different datasets the files have to be placed in the same way in the 'Fa
 
 ## Run attacks
 
-To get information on all arguments you are able to run ```python run_gradient_em_attack.py -h ```
+To get information on all arguments you can run ```python run_gradient_em_attack.py -h ```.
 
 Run the following commands to use the different attacks on the 'german' dataset with a particular set of hyperparameters.
 
@@ -80,10 +80,10 @@ python run_gradient_em_attack.py --total_grad_iter 10000 --dataset german --epsi
 
 ## Eval mode
 
-To evaluate a trained model simply pass ``` --eval_mode True ```
-One specifies which model to evaluate by the attack, dataset and hyperparameters used for the model.
+To evaluate a trained model simply pass ``` --eval_mode True ```.
+One specifies which model to evaluate by the attack, dataset, and hyperparameters used for the model.
 
-For example the following evaluates the model which used the 'IAF' attack, was trained on the 'german' dataset with 'epsilon = 0.2' 'lamb = 1' and uses accuracy as the stopping method:
+For example, the following evaluates the model which used the 'IAF' attack, was trained on the 'german' dataset with 'epsilon = 0.2' 'lamb = 1' and uses accuracy as the stopping method:
 
 ```bash
 python run_gradient_em_attack.py --eval_mode True --dataset german --epsilon 0.2 --method IAF --sensitive_feature_idx 0 --lamb 1 --stopping_method Accuracy
