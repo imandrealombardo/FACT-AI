@@ -14,7 +14,7 @@ Please cite the original paper if you find this useful:
 # Requirements
 The code was tested using the environment we provide in 'f_attack_env.yml'.
 It is highly recommended to work in that environment by installing it using Anaconda.
-To do this install Anaconda and simply run
+To do this install Anaconda and simply run:
 
 ```bash
 conda env create -f f_attack_env.yml
@@ -93,7 +93,7 @@ python run_gradient_em_attack.py --eval_mode True --dataset german --epsilon 0.2
 
 # References
 
-This code builds upon the [implemenation](https://github.com/Ninarehm/attack) developed by Mehrabi et al thus please cite:
+This code builds upon the [implemenation](https://github.com/Ninarehm/attack) developed by Mehrabi et al. thus please cite:
 
 ```
 @article{mehrabi2020exacerbating,
@@ -106,7 +106,7 @@ This code builds upon the [implemenation](https://github.com/Ninarehm/attack) de
 
 
 Their code intern builds on the implementation of Pang Wei Koh and Percy Liang in 2017. <br/>
-As Mehrabi et al we have left their LICENSE.md file to give due credit to these researchers, and to document that their license allows us to build upon their work. <br/>
+As Mehrabi et al. we have left their LICENSE.md file to give due credit to these researchers, and to document that their license allows us to build upon their work. <br/>
 Note: the 'Koh' baseline is also to be credited to these authors.
 
 Please give them credit by citing:
@@ -154,7 +154,7 @@ For the Solans baseline attack please cite:
  ```
 
 The citations of the datasets are as follows:
-  For German and Drug consumption datasets cite:
+  For German and Drug Consumption datasets cite:
  ```
 @misc{Dua:2019 ,
 author = "Dua, Dheeru and Graff, Casey",
