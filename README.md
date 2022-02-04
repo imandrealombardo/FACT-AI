@@ -1,5 +1,6 @@
 # Exacerbating Algorithmic Bias through Fairness Attacks
-This repository contains code for the introduced attacks in [Exacerbating Algorithmic Bias through Fairness Attacks](https://arxiv.org/pdf/2012.08723.pdf) paper. If you find it useful please cite: 
+This repository contains code for reproducing the experiments in the [Exacerbating Algorithmic Bias through Fairness Attacks](https://arxiv.org/pdf/2012.08723.pdf) paper as part of the [Machine Learning Reproducibility Challenge] (https://paperswithcode.com/rc2021).
+Please cite the original paper if you find this useful:
 ```
 @article{mehrabi2020exacerbating,
   title={Exacerbating Algorithmic Bias through Fairness Attacks},
@@ -9,7 +10,50 @@ This repository contains code for the introduced attacks in [Exacerbating Algori
 }
 ```
 
-This code builds upon the code developed by Pang Wei Koh and Percy Liang in 2017. We have left their LICENSE.md file to give due credit to these researchers, and to document that their license allows us to build upon their work. Please also give them credit by citing: 
+```
+# Requirements
+The code was tested using the enviroment we provide in 'f_attack_env.yml'.
+It is highly recommended to work in that enviroment by installing it using Anaconda.
+To do this install Anaconda and simply run
+
+```bash
+conda env create -f f_attack_env.yml
+```
+```bash
+conda activate f_attack_env.yml
+```
+
+# Running Instructions
+
+To replicate all our experimental results specified in the paper by evaluating the pre-trained models run the jupyter notebook 'Results_notebook.ipynb'
+
+## Data preprocessing
+
+The three datasets (german, compas, drug) used for the experiments are available in 'Custom_data_preprocessing' downloaded from source.
+Running the according data processing scripts creates a datasetname_data.npz and a datasetname_group_label.npz file in 'Fairness_attack/data'
+
+The datasetname_data.npz file contains the full training and test data.
+The datasetname_group_label.npz file contains the labels of the sensitive features (0,1). In case of our experiments 1=male 0=female
+
+The dataset can be replaced by the dataset of your choice.
+
+To run the influence attack on fairness (IAF):
+```bash
+python run_gradient_em_attack.py --em_iter 0 --total_grad_iter 10000 --dataset german --use_slab --epsilon 0.1 --method IAF --sensitive_feature_idx 36 --sensitive_attr_filename german_group_label.npz
+```
+
+To run the random anchoring attack (RAA):
+```bash
+python run_gradient_em_attack.py --em_iter 0 --total_grad_iter 10000 --dataset german --use_slab --epsilon 0.1 --method RAA --sensitive_feature_idx 36 --sensitive_attr_filename german_group_label.npz
+```
+
+To run the non-random anchoring attack (NRAA):
+```bash
+python run_gradient_em_attack.py --em_iter 0 --total_grad_iter 10000 --dataset german --use_slab --epsilon 0.1 --method NRAA --sensitive_feature_idx 36 --sensitive_attr_filename german_group_label.npz
+```
+
+
+This code builds upon the code developed by Pang Wei Koh and Percy Liang in 2017. We have left their LICENSE.md file to give due credit to these researchers, and to document that their license allows us to build upon their work. Please also give them credit by citing:
 
  ```
 @article{koh2018stronger,
@@ -42,7 +86,7 @@ If you find the influence attack on fairness useful you may also cite:
 }
  ```
 The citations of the datasets are as follows:
-	For German and Drug consumption datasets cite:
+  For German and Drug consumption datasets cite:
  ```
 @misc{Dua:2019 ,
 author = "Dua, Dheeru and Graff, Casey",
@@ -51,7 +95,7 @@ title = "{UCI} Machine Learning Repository",
 url = "http://archive.ics.uci.edu/ml",
 institution = "University of California, Irvine, School of Information and Computer Sciences" }
  ```
- For the COMPAS dataset cite: 	
+ For the COMPAS dataset cite:
  ```
 @article{larson2016compas,
   title={Compas analysis},
@@ -59,38 +103,3 @@ institution = "University of California, Irvine, School of Information and Compu
   journal={GitHub, available at: https://github. com/propublica/compas-analysis[Google Scholar]},
   year={2016}
 }
- ```
-# Tested Environments 
-The code was tested in different environments. The following requirements would work:  
-Python 3.6  
-1.11.0 < Tensorflow <= 1.12.3  
-0.20.3 <= scikit-learn <= 0.23.1  
-cvxpy 0.4.11  
-CVXcanon <= 0.1.1  
-scipy 1.1.0  
-0.23 <= Pandas <= 1.1.4  
-Matplotlib <= 3.3.3  
-seaborn <= 0.11.0  
-IPython <= 7.16.1  
-
-
-# Running Instructions
-The dataset can be replaced by the dataset of your choice.
-
-To run the influence attack on fairness (IAF):
-```bash
-python run_gradient_em_attack.py --em_iter 0 --total_grad_iter 10000 --dataset german --use_slab --epsilon 0.1 --method IAF --sensitive_feature_idx 36 --sensitive_attr_filename german_group_label.npz
-```
-
-To run the random anchoring attack (RAA):
-```bash
-python run_gradient_em_attack.py --em_iter 0 --total_grad_iter 10000 --dataset german --use_slab --epsilon 0.1 --method RAA --sensitive_feature_idx 36 --sensitive_attr_filename german_group_label.npz
-```
-
-To run the non-random anchoring attack (NRAA):
-```bash
-python run_gradient_em_attack.py --em_iter 0 --total_grad_iter 10000 --dataset german --use_slab --epsilon 0.1 --method NRAA --sensitive_feature_idx 36 --sensitive_attr_filename german_group_label.npz
-```
-
-# Contact  
-If you have questions you can contact ninarehm at usc.edu
