@@ -9,6 +9,12 @@ import scipy.sparse as sparse
 import defenses
 import upper_bounds
 
+"""
+This script includes the needed functions for the computation of the feasible set and the projection of poisoned
+datapoints onto the feasible set.
+"""
+
+
 def get_class_map():
     return {-1: 0, 1: 1}
 
@@ -27,7 +33,6 @@ def get_centroid_vec(centroids):
     centroid_vec = np.reshape(centroid_vec, (1, -1))
     return centroid_vec
 
-# Can speed this up if necessary
 def get_data_params(X, Y, percentile):
     num_classes = len(set(Y))
     num_features = X.shape[1]
