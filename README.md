@@ -28,6 +28,8 @@ conda activate f_attack
 
 To replicate all our experimental results specified in the paper by evaluating the pre-trained models run the jupyter notebook 'Results_notebook.ipynb'
 
+To do this don't forget to first run ```python -m ipykernel install --user --name=f_attack``` to create the necessary kernel.
+
 To retrain all these models from scratch simply run 'run_experiments.py'
 
 ## Data preprocessing
@@ -45,7 +47,7 @@ To use different datasets the files have to be placed in the same way in the 'Fa
 
 ## Run attacks
 
-To get information on all arguments you are able to pass run ```python run_gradient_em_attack.py -h ```
+To get information on all arguments you are able to run ```python run_gradient_em_attack.py -h ```
 
 Run the following commands to use the different attacks on the 'german' dataset with a particular set of hyperparameters.
 
@@ -58,7 +60,7 @@ python run_gradient_em_attack.py --total_grad_iter 10000 --dataset german --epsi
 
 To run the random anchoring attack (RAA):
 ```bash
-python run_gradient_em_attack.py --total_grad_iter 10000 --dataset german --epsilon 0.5 --method RAA --sensitive_feature_idx 0
+python run_gradient_em_attack.py --total_grad_iter 10000 --dataset german --epsilon 0.5 --method RAA --sensitive_feature_idx 0 --stopping_method Accuracy
 ```
 
 To run the non-random anchoring attack (NRAA):
@@ -68,7 +70,7 @@ python run_gradient_em_attack.py --total_grad_iter 10000 --dataset german --epsi
 
 To run the Koh baseline:
 ```bash
-python run_gradient_em_attack.py --total_grad_iter 10000 --dataset german --epsilon 0.5 --method Koh --sensitive_feature_idx 0
+python run_gradient_em_attack.py --total_grad_iter 10000 --dataset german --epsilon 0.5 --method Koh --sensitive_feature_idx 0 --stopping_method Accuracy
 ```
 
 To run the Solans baseline:
@@ -87,9 +89,27 @@ For example the following evaluates the model which used the 'IAF' attack, was t
 python run_gradient_em_attack.py --dataset german --epsilon 0.2 --method IAF --sensitive_feature_idx 0 --lamb 1 --stopping_method Accuracy
 ```
 
+
+
 # References
 
-This code builds upon the code developed by Pang Wei Koh and Percy Liang in 2017. We have left their LICENSE.md file to give due credit to these researchers, and to document that their license allows us to build upon their work. Please also give them credit by citing:
+This code builds upon the [implemenation](https://github.com/Ninarehm/attack) developed by Mehrabi et al thus please cite:
+
+```
+@article{mehrabi2020exacerbating,
+  title={Exacerbating Algorithmic Bias through Fairness Attacks},
+  author={Mehrabi, Ninareh and Naveed, Muhammad and Morstatter, Fred and Galstyan, Aram},
+  journal={arXiv preprint arXiv:2012.08723},
+  year={2020}
+}
+```
+
+
+Their code intern builds on the implementation of Pang Wei Koh and Percy Liang in 2017. <br/>
+As Mehrabi et al we have left their LICENSE.md file to give due credit to these researchers, and to document that their license allows us to build upon their work. <br/>
+Note: the 'Koh' baseline is also to be credited to these authors.
+
+Please give them credit by citing:
 
  ```
 @article{koh2018stronger,
@@ -121,6 +141,18 @@ If you find the influence attack on fairness useful you may also cite:
   year={2015}
 }
  ```
+
+For the Solans baseline attack please cite:
+```
+@misc{solans2020,
+      title={Poisoning Attacks on Algorithmic Fairness},
+      author={David Solans and Battista Biggio and Carlos Castillo},
+      year={2020},
+      eprint={2004.07401},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+ ```
+
 The citations of the datasets are as follows:
   For German and Drug consumption datasets cite:
  ```
