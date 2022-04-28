@@ -171,3 +171,4 @@ institution = "University of California, Irvine, School of Information and Compu
   journal={GitHub, available at: https://github. com/propublica/compas-analysis[Google Scholar]},
   year={2016}
 }
+```
