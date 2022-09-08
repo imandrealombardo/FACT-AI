@@ -1,6 +1,8 @@
 # Reproducibility of Exacerbating Algorithmic Bias through Fairness Attacks
-This repository contains code for reproducing the experiments in the [Exacerbating Algorithmic Bias through Fairness Attacks](https://arxiv.org/pdf/2012.08723.pdf) paper as part of the [Machine Learning Reproducibility Challenge](https://paperswithcode.com/rc2021).
+This repository contains the code of the paper "[\[Re\] Exacerbating Algorithmic Bias through Fairness Attacks](https://doi.org/10.5281/zenodo.6574669)", a reproducibility study of the homonymous paper by Mehrabi et al. Our work was submitted to the [Machine Learning Reproducibility Challenge 2021](https://paperswithcode.com/rc2021) and was accepted for publication with an _Outstanding Paper Award_.
+
 Please cite the original paper if you find this useful:
+
 ```
 @article{mehrabi2020exacerbating,
   title={Exacerbating Algorithmic Bias through Fairness Attacks},

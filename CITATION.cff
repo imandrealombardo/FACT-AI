@@ -1,0 +1,42 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite it as below."
+- family-names: "Tafuro"
+  given-names: "Matteo"
+  orcid: "https://orcid.org/0000-0002-6167-2156"
+- family-names: "Lombardo"
+  given-names: "Andrea"
+  orcid: "https://orcid.org/0000-0002-0478-2527"
+- family-names: "Veljković"
+  given-names: "Tin Hadži"
+  orcid: "https://orcid.org/0000-0002-0328-7372"
+- family-names: "Becker-Czarnetzki"
+  given-names: "Lasse"
+  orcid: "https://orcid.org/0000-0002-7701-8319"
+title: "[Re] Exacerbating Algorithmic Bias through Fairness Attacks"
+doi: "10.5281/zenodo.6574669"
+date-released: 2022-06-22
+url: "https://github.com/imandrealombardo/FACT-AI"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Tafuro"
+    given-names: "Matteo"
+    orcid: "https://orcid.org/0000-0002-6167-2156"
+  - family-names: "Lombardo"
+    given-names: "Andrea"
+    orcid: "https://orcid.org/0000-0002-0478-2527"
+  - family-names: "Veljković"
+    given-names: "Tin Hadži"
+    orcid: "https://orcid.org/0000-0002-0328-7372"
+  - family-names: "Becker-Czarnetzki"
+    given-names: "Lasse"
+    orcid: "https://orcid.org/0000-0002-7701-8319"
+  doi: "10.5281/zenodo.6574669"
+  journal: "ReScience C"
+  month: 6
+  start: 22 # First page number
+  end: 39 # Last page number
+  title: "[Re] Exacerbating Algorithmic Bias through Fairness Attacks"
+  number: 2
+  volume: 8
+  year: 2022
